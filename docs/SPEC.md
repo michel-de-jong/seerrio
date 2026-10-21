@@ -16,7 +16,7 @@ Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebas
 
 ## Out of scope
 
-Jellyfin, Plex, or Emby sign-in. Playback. User management. Issue reports. Push notifications. Analytics. Languages other than English. CSRF double-submit (v1 expects CSRF protection to stay off). Store release builds.
+Jellyfin, Plex, or Emby sign-in. Playback. User management. Issue reports. Push notifications. Analytics. Languages other than English. CSRF double-submit (v1 expects CSRF protection to stay off). Store listing content and submission.
 
 ## Connect
 

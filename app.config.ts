@@ -10,10 +10,15 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'automatic',
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.example.seerrlite',
+    bundleIdentifier: 'io.seerrlite.app',
+    infoPlist: {
+      NSAppTransportSecurity: {
+        NSAllowsArbitraryLoads: true,
+      },
+    },
   },
   android: {
-    package: 'com.example.seerrlite',
+    package: 'io.seerrlite.app',
     predictiveBackGestureEnabled: false,
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
@@ -25,7 +30,20 @@ const config: ExpoConfig = {
   web: {
     favicon: './assets/favicon.png',
   },
-  plugins: ['expo-router', 'expo-secure-store', 'expo-image'],
+  plugins: [
+    'expo-router',
+    'expo-secure-store',
+    'expo-image',
+    'expo-font',
+    [
+      'expo-build-properties',
+      {
+        android: {
+          usesCleartextTraffic: true,
+        },
+      },
+    ],
+  ],
 };
 
 export default config;

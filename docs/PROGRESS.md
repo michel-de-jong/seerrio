@@ -7,14 +7,15 @@ You fill in Decisions before Phase 0. The agent updates the rest at the end of e
 | Topic | Choice | Notes |
 | --- | --- | --- |
 | App display name | Seerr Lite | Rename before any public release |
-| Bundle id and Android package | com.example.seerrlite | Still the placeholder. Do not change it until you pick the real id |
+| Bundle id and Android package | io.seerrlite.app | Permanent store identity selected on 2026-10-21 |
 | URLs the phone will use | not decided | LAN and remote addresses are still open |
-| ALLOW_HTTP in release builds | not decided | The client accepts `http://`. `app.config.ts` does not change ATS or cleartext. Expo Go can open HTTP; a release build cannot until you say yes |
-| iOS install method | not decided | Phase 7 has not started |
+| ALLOW_HTTP in release builds | yes | iOS ATS and Android cleartext traffic are enabled for self-hosted LAN servers. HTTPS remains strongly preferred |
+| Native build method | EAS Build | Preview builds install as native apps; production builds target App Store Connect and Google Play |
+| iOS install method | EAS preview, then TestFlight/App Store | Requires the user's Apple Developer and App Store Connect setup |
 | Sign-in | Seerr accounts (email and password) via `/auth/local`; API key under Advanced | Fixed: this server uses Seerr's own accounts, not Jellyfin sign-in |
 | Forgot password in the app | when `emailEnabled` is true | The link is hidden otherwise. The app does not call reset unless the user asks |
 | Languages | English | Dutch later? |
-| Stack | Expo SDK 58, React Native 0.88, TypeScript, Expo Go only | SDK 58 is the current stable release that satisfies the SDK 57+ / `credentials: 'omit'` note. Do not upgrade unless asked |
+| Stack | Expo SDK 58, React Native 0.88, TypeScript | Expo Go is for development. EAS produces standalone native apps; users do not need Expo Go |
 | Auth transport | Session cookie sent as a manual Cookie header; API key only under Advanced | Fixed, see SEERR_API.md |
 | Routes | `app/` | The Expo template prefers `src/app/`. This project keeps routes in `app/` as AGENTS.md says |
 | Typed routes | off | `tsc` does not depend on generated `.expo` types |
@@ -49,7 +50,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | 4 | Details and requesting | code complete | not checked | not checked |
 | 5 | Requests and admin actions | code complete | not checked | not checked |
 | 6 | Polish and QA | code complete on the logic; screens not exercised on a device | not checked | not checked |
-| 7 | Release builds | not started | | |
+| 7 | Release builds | EAS configuration complete; account linking, signing, builds, and store submission pending | not checked | not checked |
 
 `npm run typecheck`, `npm run lint`, and `npm test` (37 tests) pass. `npm run smoke` was not run.
 
@@ -63,6 +64,8 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | expo-image | Posters, backdrops, and avatars | 3 |
 | expo-network | Offline banner and TanStack Query's online manager. The app does not call `getIpAddressAsync` (that path uses a third party on web) | 2 |
 | @expo/vector-icons | Tab icons | 3 |
+| expo-build-properties | Enable Android cleartext traffic for user-supplied HTTP Seerr servers in generated native builds | 7 |
+| expo-font, react-native-worklets | Required native peers for vector icons and Reanimated. Expo Go had supplied these implicitly; standalone builds require direct dependencies | 7 |
 | typescript, eslint, eslint-config-expo, @types/react | Typecheck and lint | 0 |
 | jest, jest-expo, @types/jest, @types/node | Unit tests and the Node smoke script | 1 |
 | tsx | Run `scripts/smoke.ts` | 1 |
@@ -77,10 +80,8 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 ## Open questions
 
-* Real bundle id and Android package.
-* Whether release builds should allow cleartext HTTP (`ALLOW_HTTP`).
 * The LAN and remote URLs the phones will use.
-* How iOS will be installed for phase 7 (TestFlight, ad hoc, Xcode, or Expo Go only).
+* Apple Developer/App Store Connect and Google Play Console project details are supplied during EAS setup; no account credentials belong in this repo.
 * Whether a manager should get a Mine/All toggle. The current list is whatever the server returns for that user.
 * Relative avatar paths are resolved against the server origin. A Seerr install on a subpath may need a different base.
 
@@ -88,8 +89,10 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 * App icons are still the Expo blank-template assets. LICENSE notes that attribution.
 * Nothing in this change has been opened in Expo Go. The phone checks below are still open.
+* No EAS project has been linked and no signed binary has been built. Run `npx eas-cli init`, then a preview build.
 * `npm` reports audit findings in the Expo dependency tree. They were left alone.
 
 ## Log
 
 * 2026-10-21 · Phases 0–6 · Scaffolded the Expo app, Seerr client, session, and the screens in `docs/SPEC.md`. `PLANNING.md` was not in the repo, so behavior is recorded in `docs/SPEC.md`. Verify with `npm run typecheck`, `npm run lint`, and `npm test`. Then, on iPhone and Android in Expo Go: connect, sign in, discover, search, open a title, request it, review the requests list, and open profile. See the hand-off notes for the exact pass.
+* 2026-10-21 · Phase 7 · Selected `io.seerrlite.app`, added EAS preview/production profiles, and enabled HTTP in generated iOS and Android apps. Verify the resolved Expo config, link the EAS project, then install preview builds on both phones.
