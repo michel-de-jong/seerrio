@@ -77,7 +77,7 @@ These stay in the Seerr web interface because they expose secrets, are destructi
 
 ## Deferred non-core OpenAPI surface
 
-These endpoints are not required by the phased mobile acceptance spec and are candidates for later, separately reviewed work:
+These endpoints are outside the current acceptance criteria and are candidates for later, separately reviewed work:
 
 - App-data/about/update metadata
 - Watchlists and watchlist-based discovery
@@ -124,7 +124,7 @@ Do not submit until all items below are complete:
 - For local builds, install a compatible Java runtime/Android SDK and full Xcode with CocoaPods 1.15.2 or newer. EAS builds do not depend on this Mac toolchain.
 - Resolve dependency audit findings without forcing an incompatible Expo/React Native upgrade.
 - Complete store privacy disclosures: the app has no analytics and contacts only the selected Seerr server plus `image.tmdb.org`.
-- Fill in the contact address in `docs/PRIVACY.md` and publish it at a public URL for both store listings.
+- Publish `docs/PRIVACY.md` at a public URL and use that URL in both store listings. General contact is the public GitHub Issues page.
 - Upload `store/play-icon-512.png` and `store/play-feature-graphic.png` to the Play listing.
 - Provide store reviewers with a public HTTPS Seerr demo server and a non-admin demo account.
 - Prepare store screenshots (iPhone only; iPad support is off), support URL, age rating, review notes, and release metadata.
