@@ -1,19 +1,82 @@
 import { createRequest, type SeerrClientOptions } from './client';
+import {
+  addBlocklistItem,
+  changeServerJob,
+  deleteOverrideRule,
+  flushCache,
+  getAdminMainSettings,
+  getAdminNetworkSettings,
+  getCacheSummary,
+  getDiscoverSliders,
+  getOverrideRules,
+  getServerJobs,
+  getServices,
+  listBlocklist,
+  removeBlocklistItem,
+  saveOverrideRule,
+  updateAdminMainSettings,
+  updateAdminNetworkSettings,
+  updateDiscoverSliders,
+} from './endpoints/admin';
 import { getMe, logout, resetPassword, signIn } from './endpoints/auth';
-import { discover } from './endpoints/discover';
-import { getMovie, getTv } from './endpoints/media';
+import { discover, discoverCategory, type DiscoverCategory } from './endpoints/discover';
+import {
+  addIssueComment,
+  createIssue,
+  deleteIssue,
+  deleteIssueComment,
+  getIssue,
+  getIssueCount,
+  listIssues,
+  setIssueStatus,
+  updateIssueComment,
+} from './endpoints/issues';
+import { getCollection, getMovie, getPerson, getRelated, getSeason, getTv } from './endpoints/media';
 import {
   approveRequest,
   declineRequest,
   deleteRequest,
+  getRequest,
   getRequestCount,
   listRequests,
+  retryRequest,
   submitRequest,
+  updateRequest,
 } from './endpoints/requests';
 import { search } from './endpoints/search';
 import { getPublicSettings, getStatus } from './endpoints/settings';
-import { getQuota } from './endpoints/users';
-import type { CreateRequestBody, DiscoverFeed, ListRequestsQuery } from './types';
+import {
+  changePassword,
+  batchUpdateUserPermissions,
+  createUser,
+  deleteUser,
+  getNotificationSettings,
+  getPasswordStatus,
+  getQuota,
+  getUserMainSettings,
+  getUser,
+  getUserPermissions,
+  getWatchData,
+  updateNotificationSettings,
+  updateUserMainSettings,
+  updateUserPermissions,
+  listUsers,
+} from './endpoints/users';
+import type {
+  AdminMainSettings,
+  AdminNetworkSettings,
+  CreateIssueBody,
+  CreateRequestBody,
+  CreateUserBody,
+  DiscoverFeed,
+  DiscoverSlider,
+  IssueFilter,
+  ListRequestsQuery,
+  NotificationSettings,
+  OverrideRule,
+  UpdateRequestBody,
+  UserMainSettings,
+} from './types';
 
 export function createSeerrClient(options: SeerrClientOptions) {
   const request = createRequest(options);
@@ -27,15 +90,87 @@ export function createSeerrClient(options: SeerrClientOptions) {
     resetPassword: (email: string) => resetPassword(request, email),
     search: (query: string, page: number, signal?: AbortSignal) => search(request, query, page, signal),
     discover: (feed: DiscoverFeed, page: number, signal?: AbortSignal) => discover(request, feed, page, signal),
+    discoverCategory: (
+      mediaType: 'movie' | 'tv',
+      category: DiscoverCategory,
+      value: string,
+      page: number,
+      signal?: AbortSignal,
+    ) => discoverCategory(request, mediaType, category, value, page, signal),
     getMovie: (id: number, signal?: AbortSignal) => getMovie(request, id, signal),
     getTv: (id: number, signal?: AbortSignal) => getTv(request, id, signal),
+    getRelated: (
+      kind: 'movie' | 'tv',
+      id: number,
+      relation: 'recommendations' | 'similar',
+      page: number,
+      signal?: AbortSignal,
+    ) => getRelated(request, kind, id, relation, page, signal),
+    getSeason: (tvId: number, seasonNumber: number, signal?: AbortSignal) =>
+      getSeason(request, tvId, seasonNumber, signal),
+    getPerson: (id: number, signal?: AbortSignal) => getPerson(request, id, signal),
+    getCollection: (id: number, signal?: AbortSignal) => getCollection(request, id, signal),
     submitRequest: (body: CreateRequestBody) => submitRequest(request, body),
     listRequests: (query: ListRequestsQuery, signal?: AbortSignal) => listRequests(request, query, signal),
     getRequestCount: (signal?: AbortSignal) => getRequestCount(request, signal),
     approveRequest: (id: number) => approveRequest(request, id),
     declineRequest: (id: number) => declineRequest(request, id),
     deleteRequest: (id: number) => deleteRequest(request, id),
+    getRequest: (id: number, signal?: AbortSignal) => getRequest(request, id, signal),
+    updateRequest: (id: number, body: UpdateRequestBody) => updateRequest(request, id, body),
+    retryRequest: (id: number) => retryRequest(request, id),
+    listIssues: (filter: IssueFilter, take: number, skip: number, signal?: AbortSignal) =>
+      listIssues(request, filter, take, skip, signal),
+    getIssue: (id: number, signal?: AbortSignal) => getIssue(request, id, signal),
+    getIssueCount: (signal?: AbortSignal) => getIssueCount(request, signal),
+    createIssue: (body: CreateIssueBody) => createIssue(request, body),
+    addIssueComment: (id: number, message: string) => addIssueComment(request, id, message),
+    setIssueStatus: (id: number, status: 'open' | 'resolved') => setIssueStatus(request, id, status),
+    deleteIssue: (id: number) => deleteIssue(request, id),
+    updateIssueComment: (id: number, message: string) => updateIssueComment(request, id, message),
+    deleteIssueComment: (id: number) => deleteIssueComment(request, id),
     getQuota: (userId: number, signal?: AbortSignal) => getQuota(request, userId, signal),
+    getUserMainSettings: (userId: number, signal?: AbortSignal) => getUserMainSettings(request, userId, signal),
+    updateUserMainSettings: (userId: number, settings: UserMainSettings) =>
+      updateUserMainSettings(request, userId, settings),
+    getNotificationSettings: (userId: number, signal?: AbortSignal) =>
+      getNotificationSettings(request, userId, signal),
+    updateNotificationSettings: (userId: number, settings: NotificationSettings) =>
+      updateNotificationSettings(request, userId, settings),
+    getPasswordStatus: (userId: number, signal?: AbortSignal) => getPasswordStatus(request, userId, signal),
+    changePassword: (userId: number, currentPassword: string | undefined, newPassword: string) =>
+      changePassword(request, userId, currentPassword, newPassword),
+    getWatchData: (userId: number, signal?: AbortSignal) => getWatchData(request, userId, signal),
+    listUsers: (take: number, skip: number, query: string, signal?: AbortSignal) =>
+      listUsers(request, take, skip, query, signal),
+    getUser: (userId: number, signal?: AbortSignal) => getUser(request, userId, signal),
+    createUser: (body: CreateUserBody) => createUser(request, body),
+    deleteUser: (userId: number) => deleteUser(request, userId),
+    getUserPermissions: (userId: number, signal?: AbortSignal) => getUserPermissions(request, userId, signal),
+    updateUserPermissions: (userId: number, permissions: number) =>
+      updateUserPermissions(request, userId, permissions),
+    batchUpdateUserPermissions: (ids: number[], permissions: number) =>
+      batchUpdateUserPermissions(request, ids, permissions),
+    getAdminMainSettings: (signal?: AbortSignal) => getAdminMainSettings(request, signal),
+    updateAdminMainSettings: (settings: AdminMainSettings) => updateAdminMainSettings(request, settings),
+    getAdminNetworkSettings: (signal?: AbortSignal) => getAdminNetworkSettings(request, signal),
+    updateAdminNetworkSettings: (settings: AdminNetworkSettings) => updateAdminNetworkSettings(request, settings),
+    listBlocklist: (take: number, skip: number, search: string, signal?: AbortSignal) =>
+      listBlocklist(request, take, skip, search, signal),
+    addBlocklistItem: (input: { tmdbId: number; mediaType: 'movie' | 'tv'; title: string; user: number }) =>
+      addBlocklistItem(request, input),
+    removeBlocklistItem: (tmdbId: number, mediaType: 'movie' | 'tv') =>
+      removeBlocklistItem(request, tmdbId, mediaType),
+    getDiscoverSliders: (signal?: AbortSignal) => getDiscoverSliders(request, signal),
+    updateDiscoverSliders: (sliders: DiscoverSlider[]) => updateDiscoverSliders(request, sliders),
+    getOverrideRules: (signal?: AbortSignal) => getOverrideRules(request, signal),
+    saveOverrideRule: (rule: OverrideRule | Omit<OverrideRule, 'id'>) => saveOverrideRule(request, rule),
+    deleteOverrideRule: (id: number) => deleteOverrideRule(request, id),
+    getServices: (signal?: AbortSignal) => getServices(request, signal),
+    getServerJobs: (signal?: AbortSignal) => getServerJobs(request, signal),
+    changeServerJob: (id: string, action: 'run' | 'cancel') => changeServerJob(request, id, action),
+    getCacheSummary: (signal?: AbortSignal) => getCacheSummary(request, signal),
+    flushCache: (id: string) => flushCache(request, id),
   };
 }
 

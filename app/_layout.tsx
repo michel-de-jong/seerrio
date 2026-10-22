@@ -1,9 +1,9 @@
 import 'react-native-gesture-handler';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -53,6 +53,21 @@ function RootNavigator() {
   const { session } = useSession();
   const router = useRouter();
   const segments = useSegments();
+  const queryClient = useQueryClient();
+  const cacheScope =
+    session.status === 'signedIn'
+      ? `${session.serverUrl}:${session.user.id}`
+      : session.status === 'needsSignIn'
+        ? session.serverUrl
+        : session.status;
+  const previousCacheScope = useRef(cacheScope);
+
+  useEffect(() => {
+    if (previousCacheScope.current !== cacheScope) {
+      queryClient.clear();
+      previousCacheScope.current = cacheScope;
+    }
+  }, [cacheScope, queryClient]);
 
   useEffect(() => {
     if (session.status === 'loading') return;
@@ -98,7 +113,32 @@ function RootNavigator() {
         <Stack.Screen name="forgot-password" options={{ title: en.forgotPassword.title }} />
         <Stack.Screen name="movie/[id]" options={{ title: en.media.movie }} />
         <Stack.Screen name="tv/[id]" options={{ title: en.media.series }} />
+        <Stack.Screen name="tv/[id]/season/[season]" options={{ title: en.media.season }} />
+        <Stack.Screen name="person/[id]" options={{ title: en.media.person }} />
+        <Stack.Screen name="collection/[id]" options={{ title: en.media.collection }} />
+        <Stack.Screen name="discover/[type]/[category]/[value]" options={{ title: en.discover.browse }} />
         <Stack.Screen name="request/[type]/[id]" options={{ presentation: 'modal', title: en.request.title }} />
+        <Stack.Screen name="request/[id]" options={{ title: en.requests.detailTitle }} />
+        <Stack.Screen name="issue/create" options={{ presentation: 'modal', title: en.issues.report }} />
+        <Stack.Screen name="issue/[id]" options={{ title: en.issues.detailTitle }} />
+        <Stack.Screen name="profile/settings" options={{ title: en.profile.settings }} />
+        <Stack.Screen name="profile/notifications" options={{ title: en.profile.notifications }} />
+        <Stack.Screen name="profile/password" options={{ title: en.profile.password }} />
+        <Stack.Screen name="profile/watch-data" options={{ title: en.profile.watchHistory }} />
+        <Stack.Screen name="admin/users/index" options={{ title: en.profile.userAdministration }} />
+        <Stack.Screen name="admin/users/create" options={{ title: en.userAdmin.create }} />
+        <Stack.Screen name="admin/users/[id]" options={{ title: en.userAdmin.detail }} />
+        <Stack.Screen name="admin/users/batch" options={{ title: en.userAdmin.batchTitle }} />
+        <Stack.Screen name="admin/index" options={{ title: en.profile.serverAdministration }} />
+        <Stack.Screen name="admin/main" options={{ title: en.serverAdmin.main }} />
+        <Stack.Screen name="admin/network" options={{ title: en.serverAdmin.network }} />
+        <Stack.Screen name="admin/blocklist" options={{ title: en.serverAdmin.blocklist }} />
+        <Stack.Screen name="admin/sliders" options={{ title: en.serverAdmin.sliders }} />
+        <Stack.Screen name="admin/override-rules" options={{ title: en.serverAdmin.overrideRules }} />
+        <Stack.Screen name="admin/override-rule" options={{ title: en.serverAdmin.editRule }} />
+        <Stack.Screen name="admin/services" options={{ title: en.serverAdmin.services }} />
+        <Stack.Screen name="admin/jobs" options={{ title: en.serverAdmin.jobs }} />
+        <Stack.Screen name="admin/caches" options={{ title: en.serverAdmin.caches }} />
       </Stack>
     </>
   );

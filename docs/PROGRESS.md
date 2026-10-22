@@ -50,9 +50,21 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | 4 | Details and requesting | code complete | not checked | not checked |
 | 5 | Requests and admin actions | code complete | not checked | not checked |
 | 6 | Polish and QA | code complete on the logic; screens not exercised on a device | not checked | not checked |
-| 7 | Release builds | EAS configuration complete; account linking, signing, builds, and store submission pending | not checked | not checked |
+| 7 | Release builds | parity/security audit complete; signed EAS builds and store submission pending | not checked | not checked |
 
-`npm run typecheck`, `npm run lint`, and `npm test` (37 tests) pass. `npm run smoke` was not run.
+`npm run typecheck`, `npm run lint`, and `npm test` (66 tests) pass. `npm run smoke` was not run.
+
+### Mobile parity roadmap
+
+| Phase | Scope | Status |
+| --- | --- | --- |
+| 1 | Product rename, opt-in persistent sessions, auth hardening | code complete; PR #8 |
+| 2 | Rich discovery, people, collections, recommendations, seasons and episodes | code complete |
+| 3 | Request detail/edit/retry and issues | code complete |
+| 4 | Personal settings, preferences, password and watch data | code complete |
+| 5 | User administration | code complete |
+| 6 | Practical server administration | code complete |
+| 7 | Parity/security audit and store readiness | code and local audit complete; device/store gates pending |
 
 ## Dependencies added
 
@@ -91,11 +103,21 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 * App icons are still the Expo blank-template assets. LICENSE notes that attribution.
 * Nothing in this change has been opened in Expo Go. The phone checks below are still open.
 * No EAS project has been linked and no signed binary has been built. Run `npx eas-cli init`, then a preview build.
-* `npm` reports audit findings in the Expo dependency tree. They were left alone.
-* The browser preview stores the session cookie and optional API key in `localStorage`. Phones keep them in the platform keychain.
+* `npm audit --omit=dev` reports 34 inherited findings (26 high and 8 moderate) in Expo/Metro/Jest/Expo Router dependency paths. Its proposed `--force` fixes would replace pinned Expo, Expo Router, or React Native with incompatible major versions, so they remain a store-release blocker pending compatible upstream releases.
+* Browser preview sessions are memory-only. Opt-in persistent sessions use the platform keychain on phones.
+* Expo Doctor passes 20 of 21 checks. This Mac has only Xcode Command Line Tools, no usable CocoaPods 1.15.2+, and no Java runtime, so local iOS and Android compilation cannot run yet.
+* EAS is not authenticated or linked. Native preview builds require the owner to run `npx eas-cli login` and `npx eas-cli init`; credentials and the generated project association must be reviewed before starting remote builds.
+* Android and iOS projects generate successfully, and Android, iOS, and web JavaScript bundles export successfully. This does not replace signed preview builds or the physical-device pass in `docs/RELEASE_CHECKLIST.md`.
 
 ## Log
 
+* 2026-10-22 · Sign-in regression · Password sign-in now preserves the anonymous CSRF cookies obtained before authentication while still discarding every prior session or API-key credential. Failed attempts retain only refreshed CSRF cookies, so retrying does not depend on an extra rejected request and CSRF refresh round trip. Verify in Expo Go with Seerr CSRF protection enabled.
+* 2026-10-22 · Release audit · Added an OpenAPI parity and store-readiness checklist plus an automated tracked-secret/logging, HTTP-boundary, route-exposure, authenticated-image-cache, accessibility, dark-mode, and offline-state guard. The Seerr 3.5 audit counted 217 operations across 168 paths: 80 are called by mobile and every remaining operation is now classified as excluded, deferred, or deprecated. Shared media lists now show offline state and two interaction semantics were tightened. Typecheck, lint, 66 tests, Expo dependency checks, and Android/iOS/web bundle exports pass. Security review found no medium-or-higher issue in the reviewed changes. Expo Doctor is blocked only by local CocoaPods; signed EAS builds and physical iPhone/Android acceptance remain owner-gated.
+* 2026-10-22 · Server administration · Added permission-gated safe main/network settings, blocklist operations, discover slider ordering/toggles, override rules, redacted service summaries, confirmed job actions, and aggregate cache management. Parsers discard API keys, proxy credentials, service hosts, and DNS entries; excluded operations remain documented for the web interface. Typecheck, lint, and 66 tests pass.
+* 2026-10-22 · User administration · Added MANAGE_USERS-gated user search/list/detail/create/delete, account and quota overrides, replacement passwords, complete permission controls, and confirmed batch permission replacement. Owner/self protections are enforced in the UI and the server remains authoritative. External account imports remain excluded. Typecheck, lint, and 62 tests pass.
+* 2026-10-22 · Personal settings · Added current-user account and region/language preferences, per-channel notification event masks, password changes, quota detail, and read-only watch history. Notification credentials are memory-only with immediate query GC, passwords never persist, and all query data clears when the server/user scope changes. Typecheck, lint, and 60 tests pass.
+* 2026-10-22 · Requests and issues · Added request details, manager-only pending edits and failed retries, plus permission-gated issue list/count/detail/create/comment/status/edit/delete flows. PUT now receives the same CSRF protection and single refresh as other mutations. Typecheck, lint, and 56 tests pass. Device confirmations remain open.
+* 2026-10-22 · Rich discovery · Added upcoming movie/series feeds, cast and people pages, movie collections, recommendations, similar titles, genre/language/studio/network browsing, and TV season/episode pages. Added defensive response parsing and tests. Typecheck, lint, and 53 tests pass. Verify each route and its loading, empty, error, offline, accessibility, and dark-mode state on both phones.
 * 2026-10-22 · Security foundation · Renamed the visible app to Seerr Mobile. Added opt-in native keychain persistence, memory-only default/browser sessions, origin-bound auth records, stale-response guards, HTTP risk confirmation, HTTPS-only API-key sign-in, restricted avatars, external-link confirmation, cookie deletion handling, and sanitized server messages.
 * 2026-10-22 · Sign-in · CSRF protection can stay on. The app stores `_csrf` and `XSRF-TOKEN`, sends `X-XSRF-TOKEN` on changes, and retries once after a CSRF rejection. Verify on the phone over HTTPS: connect, then sign in with a native Seerr account while Settings, Network, Enable CSRF Protection is on.
 

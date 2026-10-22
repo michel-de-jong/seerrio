@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, FlatList, Text, View } from 'react-native';
 
@@ -123,6 +124,11 @@ function RequestRow({ item }: { item: MediaRequest }) {
         {who ? <Text style={{ color: theme.colors.muted }}>{en.requests.requestedBy(who)}</Text> : null}
         {details.isError ? <Button label={en.actions.retry} variant="secondary" onPress={() => void details.refetch()} /> : null}
         <View style={{ flexDirection: 'row', gap: theme.space.sm, flexWrap: 'wrap' }}>
+          <Button
+            label={en.actions.viewDetails}
+            variant="secondary"
+            onPress={() => router.push({ pathname: '/request/[id]', params: { id: String(item.id) } })}
+          />
           {canReview ? (
             <Button
               label={en.actions.approve}

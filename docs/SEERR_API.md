@@ -67,15 +67,68 @@ This app uses Seerr's native accounts ("local users"): an email and a password s
 | `GET /discover/trending?page=` | Trending | Mixed movies, series and people |
 | `GET /discover/movies?page=` | Popular movies | |
 | `GET /discover/tv?page=` | Popular series | |
+| `GET /discover/movies/upcoming?page=` | Upcoming movies | |
+| `GET /discover/tv/upcoming?page=` | Upcoming series | |
+| `GET /discover/movies/genre/{genreId}?page=` | Movies by genre | |
+| `GET /discover/tv/genre/{genreId}?page=` | Series by genre | |
+| `GET /discover/movies/language/{code}?page=` | Movies by original language | ISO 639 code |
+| `GET /discover/tv/language/{code}?page=` | Series by original language | ISO 639 code |
+| `GET /discover/movies/studio/{studioId}?page=` | Movies by studio | |
+| `GET /discover/tv/network/{networkId}?page=` | Series by network | |
 | `GET /movie/{tmdbId}` | Movie details | `mediaInfo` is absent until Seerr knows the title |
+| `GET /movie/{tmdbId}/recommendations?page=` | Recommended movies | |
+| `GET /movie/{tmdbId}/similar?page=` | Similar movies | |
 | `GET /tv/{tmdbId}` | Series details | TMDB `seasons[]`, plus `mediaInfo.seasons[]` with statuses |
+| `GET /tv/{tmdbId}/season/{seasonNumber}` | Season and episode details | Season zero is specials |
+| `GET /tv/{tmdbId}/recommendations?page=` | Recommended series | |
+| `GET /tv/{tmdbId}/similar?page=` | Similar series | |
+| `GET /person/{tmdbId}` | Person biography | |
+| `GET /person/{tmdbId}/combined_credits` | Movie and series credits | Loaded with the person biography |
+| `GET /collection/{tmdbId}` | Movie collection and parts | |
 | `POST /request` | Create a request | Body below |
 | `GET /request` | List requests | Query below; returns `pageInfo` and `results[]` |
 | `GET /request/count` | Counts per status | Managers' badge |
 | `POST /request/{id}/approve` | Approve | MANAGE_REQUESTS |
 | `POST /request/{id}/decline` | Decline | MANAGE_REQUESTS |
+| `GET /request/{id}` | Request detail | Server enforces visibility |
+| `PUT /request/{id}` | Edit pending request | MANAGE_REQUESTS; `{ mediaType, seasons?, is4k? }` |
+| `POST /request/{id}/retry` | Retry a failed request | MANAGE_REQUESTS |
 | `DELETE /request/{id}` | Cancel or delete | The requester while pending, or MANAGE_REQUESTS |
+| `GET /issue` | List issues | Server scopes create-only users to their own issues |
+| `GET /issue/count` | Issue counts | Used only for managers in the app |
+| `GET /issue/{id}` | Issue detail and comments | Owner, VIEW_ISSUES, or MANAGE_ISSUES |
+| `POST /issue` | Create an issue | CREATE_ISSUES or MANAGE_ISSUES |
+| `POST /issue/{id}/comment` | Add a comment | Owner or MANAGE_ISSUES |
+| `POST /issue/{id}/{open\|resolved}` | Change issue status | Owner or MANAGE_ISSUES |
+| `DELETE /issue/{id}` | Delete an issue | Owner before replies, or MANAGE_ISSUES |
+| `PUT /issueComment/{id}` | Edit a comment | Comment owner or MANAGE_ISSUES |
+| `DELETE /issueComment/{id}` | Delete a comment | Comment owner or MANAGE_ISSUES |
 | `GET /user/{id}/quota` | Quota | `movie` and `tv`, each with `limit`, `days`, `used`, `remaining`, `restricted` |
+| `GET /user/{id}/settings/main` | Current-user preferences | Viewing another user requires MANAGE_USERS |
+| `POST /user/{id}/settings/main` | Update current-user preferences | Round-trip fields not edited by the app |
+| `GET /user/{id}/settings/notifications` | Notification preferences | Response can contain channel credentials; never persist or display them |
+| `POST /user/{id}/settings/notifications` | Update event masks | Round-trip the in-memory response so credentials are not erased |
+| `GET /user/{id}/settings/password` | Whether a password exists | Does not return the password |
+| `POST /user/{id}/settings/password` | Change password | Current password is required when one exists; minimum 8 characters |
+| `GET /user/{id}/watch_data` | Play count and recently watched media | Read-only |
+| `GET /user?take=&skip=&q=` | User administration list/search | MANAGE_USERS in the app |
+| `GET /user/{id}` | User detail | MANAGE_USERS |
+| `POST /user` | Create a native user | App sends email, optional username, and an explicit password |
+| `DELETE /user/{id}` | Delete a user | Primary owner and current manager are protected in the app |
+| `GET /user/{id}/settings/permissions` | Permission mask | MANAGE_USERS |
+| `POST /user/{id}/settings/permissions` | Replace permission mask | Server enforces delegation limits |
+| `PUT /user` | Replace permissions for a batch | `{ ids, permissions }`; confirmed in the app |
+| `GET/POST /settings/main` | Safe main settings | Parser drops `apiKey`; app sends only whitelisted fields |
+| `GET/POST /settings/network` | Safe network settings | Parser drops proxy host/password and bypass details |
+| `GET/POST /settings/discover` | List and batch-update slider order/enabled state | ADMIN |
+| `GET/POST /blocklist` | List/add blocklist entries | VIEW_BLOCKLIST or MANAGE_BLOCKLIST as appropriate |
+| `DELETE /blocklist/{tmdbId}` | Remove a blocklist entry | MANAGE_BLOCKLIST; requires `mediaType` |
+| `GET/POST/PUT/DELETE /overrideRule` | Override-rule administration | ADMIN |
+| `GET /service/radarr`, `GET /service/sonarr` | Redacted service summaries | App discards hosts and API keys |
+| `GET /settings/jobs` | Scheduled jobs | App does not expose schedule editing |
+| `POST /settings/jobs/{id}/{run\|cancel}` | Run or cancel a job | Confirmed; never retried |
+| `GET /settings/cache` | Aggregate cache stats | App discards DNS entries |
+| `POST /settings/cache/{id}/flush` | Flush a named API cache | Confirmed; never retried |
 
 Search and discover items have `mediaType` (`movie`, `tv`, `person`, sometimes others), `id` (TMDB id), `title` (movies) or `name` (series), `releaseDate` or `firstAirDate`, `posterPath`, `backdropPath`, `overview`, and an optional `mediaInfo` with `status` and `status4k`. Show only `movie` and `tv`.
 
@@ -193,6 +246,11 @@ First match wins. Use `media.status4k` when `request.is4k` is true.
 | REQUEST_VIEW | 16384 |
 | REQUEST_MOVIE | 262144 |
 | REQUEST_TV | 524288 |
+| MANAGE_ISSUES | 1048576 |
+| VIEW_ISSUES | 2097152 |
+| CREATE_ISSUES | 4194304 |
+
+The app never calls the Plex, Jellyfin, or Emby import/link endpoints.
 
 Helpers (true with ADMIN or any listed bit):
 
@@ -217,7 +275,7 @@ The values come from Seerr's `server/lib/permissions.ts`; re-check there if an u
 ## Images
 
 * Posters and backdrops: `https://image.tmdb.org/t/p/{size}{path}` (`path` starts with `/`). Posters w185 in grids, w342 on details; backdrops w780.
-* Avatars: `user.avatar` can be absolute or relative to the server. Resolve relative ones against the server URL and pass the auth header through expo-image's `source.headers`, only for the Seerr host. Never send the cookie or API key to image.tmdb.org or any other host.
+* Avatars: `user.avatar` can be absolute or relative to the server. Resolve relative ones against the server URL and pass the auth header through expo-image's `source.headers`, only for the Seerr host. Use memory-only caching for authenticated images. Never send the cookie or API key to image.tmdb.org or any other host.
 
 ## Errors
 
@@ -232,12 +290,13 @@ The values come from Seerr's `server/lib/permissions.ts`; re-check there if an u
 
 ## CSRF protection
 
-Seerr, Settings, Network, "Enable CSRF Protection" is off by default. When it's on, Seerr requires HTTPS and checks CSRF before it checks the password. `GET /status` sets `_csrf` (httpOnly) and `XSRF-TOKEN`. The app stores both with the session cookie, sends them on later requests, and sends the decoded `XSRF-TOKEN` as `X-XSRF-TOKEN` on POST and DELETE. A 403 whose message mentions CSRF drops those two cookies, loads `/status` again, and retries the change once. An API key does not skip this check.
+Seerr, Settings, Network, "Enable CSRF Protection" is off by default. When it's on, Seerr requires HTTPS and checks CSRF before it checks the password. `GET /status` sets `_csrf` (httpOnly) and `XSRF-TOKEN`. The app stores both with the session cookie, sends them on later requests, and sends the decoded `XSRF-TOKEN` as `X-XSRF-TOKEN` on every non-GET request, including POST, PUT, and DELETE. A 403 whose message mentions CSRF drops those two cookies, loads `/status` again, and retries the change once. An API key does not skip this check.
 
 ## Versions
 
 * Minimum supported: Seerr 3.0.0. Jellyseerr 2.x is close but untested.
 * After a Seerr upgrade: download the matching `seerr-api.yml`, run `npm run smoke`, compare the fixtures, and update this file.
+* Mobile endpoint coverage, intentional exclusions, and deferred OpenAPI areas are tracked in `RELEASE_CHECKLIST.md`.
 
 ## References
 

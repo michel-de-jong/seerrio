@@ -9,14 +9,16 @@ Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebas
 * Save a server URL and check `GET /status` and `GET /settings/public`.
 * Sign in with `POST /auth/local`, then `GET /auth/me`. Optional API key under Advanced.
 * Forgot password only when `emailEnabled` is true.
-* Discover trending, movies, and series. Search. Movie and series details by TMDB id.
+* Discover trending, popular and upcoming movies and series. Search. Rich movie and series details by TMDB id.
+* Browse cast, people and their combined credits, movie collections, recommendations, similar titles, genres, original languages, studios, networks, and TV season/episode details.
 * Request a movie, or explicit TV seasons. Optional 4K when the server and the user allow it.
-* List requests, and let a manager approve or decline. The requester can remove a pending request; a manager can remove any request.
-* Profile with quota, server, and sign out.
+* List and inspect requests. Managers can edit pending requests, approve, decline, and retry failed requests. The requester can remove a pending request; a manager can remove any request.
+* Report and follow media issues. Supported users can list and inspect issues, comment, resolve/reopen, and edit or delete their own comments; moderators can manage all issues.
+* Profile with quota, server, account preferences, notification preferences, password change, watch history, and sign out.
 
 ## Out of scope
 
-Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User management. Issue reports. Push notifications. Analytics. Languages other than English. Store listing content and submission.
+Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push notifications until Seerr exposes a suitable mobile registration flow. Analytics. Languages other than English. Store submission.
 
 ## Connect
 
@@ -48,7 +50,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 
 ## Discover and search
 
-* Discover has Trending, Movies, and Series. Search is debounced. Both paginate.
+* Discover has Trending, Movies, Series, Upcoming movies, and Upcoming series. Search is debounced. All feeds paginate.
 * Show only `movie` and `tv`. Posters use `w185`. Details use `w342` posters and `w780` backdrops.
 * Each card shows the title, year, and a status badge when Seerr already knows the title.
 * Empty, error with retry, and offline states are visible. Cached rows stay on screen while offline.
@@ -57,6 +59,10 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 
 * Routes use the TMDB id.
 * Show title, year, overview, poster, backdrop, and status badges for HD and 4K when those values exist.
+* Show cast with links to person pages, movie collection links, recommendations, and similar titles.
+* Genres and original languages open filtered movie or series lists. Movie studios and TV networks open their matching filtered lists.
+* Person pages show biography and combined movie/series credits. Collection pages show their titles.
+* TV seasons open a season page with episode names, air dates, stills, and overviews.
 * A movie or season is requestable when its status is missing, unknown, or deleted. Pending, processing, partially available, available, blocklisted, and any unrecognized number are not requestable.
 * Season 0 stays hidden until the user asks for specials.
 * A season is also blocked when it is listed on a pending or approved request for the selected quality.
@@ -82,6 +88,15 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 * Approve and decline are shown to someone with manage-requests permission while the request is pending. Confirm both.
 * The requester can remove their own pending request. A manager can remove any request. Confirm removal.
 * The tab badge is the pending count from `GET /request/count`, for managers only.
+* A request detail screen is available to users who can see the request. Only managers can edit a pending request or retry a failed request. Every action requires confirmation and mutation retries stay off.
+
+## Issues
+
+* The Issues tab is visible only with CREATE_ISSUES, VIEW_ISSUES, MANAGE_ISSUES, or ADMIN. Users with create-only permission see only their own issues because the server scopes the list.
+* A report can be created from a title Seerr already knows. It has a video, audio, subtitle, or other type, a non-empty message, and optional TV season/episode numbers.
+* Issue owners and managers can comment and open/resolve an issue. A user can edit or delete their own comment; managers can edit or delete any comment.
+* An owner can delete their issue only before another comment exists. Managers can delete any issue. Confirm status changes and deletions.
+* Managers see the open-issue count on the tab. Mutations never retry automatically and invalidate issue list, detail, and count data.
 
 ## Profile
 
@@ -89,7 +104,40 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 * Relative avatars are resolved against the server. Auth headers are attached only for the Seerr host, never for `image.tmdb.org`.
 * Show movie and series quota, the server URL, and the Seerr version.
 * Say when the session is an API key.
+* Current users can update their display name, email, locale, discovery region, streaming region, and original language. Existing quota and watchlist-sync fields are round-tripped unchanged.
+* Notification event masks can be changed per configured channel. Channel credentials are never displayed or persisted by the app; they stay only in an in-memory query with immediate garbage collection after the screen closes and are round-tripped so saving masks does not erase them.
+* Password changes require the current password when Seerr says one exists, an 8-character minimum, matching confirmation, and explicit confirmation. Password fields are never persisted and clear after success.
+* Watch data shows the server play count and recently watched titles. It is read-only.
+* TanStack Query data is cleared whenever the server or signed-in user changes, including sign-out.
+
+## User administration
+
+* Only MANAGE_USERS or ADMIN can open user administration.
+* Managers can search and page through users, inspect a user, create native users with an explicit password, edit display name/email and quota overrides, set a replacement password, and delete non-protected users.
+* Passwords are never persisted, logged, or included in cache data. New and replacement passwords require 8 characters and matching confirmation.
+* The primary owner cannot be deleted or have permissions changed. Managers cannot change their own permissions or delete themselves.
+* Permission controls cover every Seerr permission known to this server version. Non-admin managers can only toggle permissions they hold; the server remains authoritative.
+* Batch permission updates exclude the primary owner and current manager, replace the complete permission mask, show a warning, and require confirmation.
+* Plex/Jellyfin/Emby imports and linked-account administration remain out of scope.
+
+## Server administration
+
+* MANAGE_SETTINGS or ADMIN can edit a safe subset of main settings and network settings. API keys, proxy hosts/passwords, bypass rules, and integration credentials are never parsed into app state.
+* Turning off native sign-in or CSRF protection requires an explicit warning. CSRF protection should remain enabled. Trust-proxy state is read-only.
+* VIEW_BLOCKLIST can inspect/search the blocklist; MANAGE_BLOCKLIST can add a title from details and remove a block with confirmation.
+* ADMIN can enable, disable, and reorder discover sliders. ADMIN can list, create, edit, and delete override rules with confirmations for deletion.
+* MANAGE_SETTINGS can view redacted Radarr/Sonarr summaries, run or cancel scheduled jobs with confirmation, view aggregate cache stats, and flush named API caches with confirmation.
+* Service hosts, API keys, proxy secrets, DNS entry hostnames/addresses, and notification credentials are never displayed. Queries that transiently receive sensitive server responses use immediate garbage collection.
+* Initial setup, API-key regeneration, logs, integration configuration/secrets, library scans, media-file deletion, job schedule editing, and DNS-entry flushing stay in Seerr’s web interface.
 
 ## Every screen
 
 Loading, empty, error with retry, and offline. Labels for controls. Light and dark mode from the system theme. Status colors come from `src/lib/status.ts`. Permission checks come from `src/lib/permissions.ts`. Copy comes from `src/i18n/en.ts`.
+
+## Release acceptance
+
+* `npm run release:check`, typecheck, lint, tests, Expo dependency checks, and native bundle exports pass from a clean checkout.
+* Expo Doctor has no project-configuration failures. Local native-tooling failures are blockers only for builds performed on that machine; EAS still requires successful signed preview builds.
+* The endpoint inventory, deliberate exclusions, deferred endpoints, store gates, and complete physical-device pass are maintained in `docs/RELEASE_CHECKLIST.md`.
+* No release ships with tracked secrets or signing files, runtime credential logging, authenticated image disk caching, or inbound link configuration that bypasses session route protection.
+* Store submission requires signed preview builds and the full iPhone and Android acceptance pass. Local JavaScript bundle generation is not a substitute for installing those binaries.

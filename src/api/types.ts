@@ -1,6 +1,6 @@
 export type MediaType = 'movie' | 'tv';
 
-export const discoverFeeds = ['trending', 'movies', 'tv'] as const;
+export const discoverFeeds = ['trending', 'movies', 'tv', 'upcomingMovies', 'upcomingTv'] as const;
 export type DiscoverFeed = (typeof discoverFeeds)[number];
 
 export const requestFilters = [
@@ -30,6 +30,9 @@ export type MediaRequestSummary = {
 };
 
 export type MediaInfo = {
+  id?: number;
+  tmdbId?: number;
+  mediaType?: MediaType;
   status?: number;
   status4k?: number;
   mediaUrl?: string | null;
@@ -88,6 +91,20 @@ export type TvSeason = {
   posterPath: string | null;
 };
 
+export type PersonCredit = {
+  id: number;
+  name: string;
+  character?: string;
+  profilePath: string | null;
+};
+
+export type CollectionSummary = {
+  id: number;
+  name: string;
+  posterPath: string | null;
+  backdropPath: string | null;
+};
+
 export type MovieDetails = {
   id: number;
   title: string;
@@ -97,6 +114,11 @@ export type MovieDetails = {
   releaseDate?: string;
   runtime?: number;
   mediaInfo?: MediaInfo;
+  cast?: PersonCredit[];
+  collection?: CollectionSummary;
+  genres?: NamedEntity[];
+  productionCompanies?: NamedEntity[];
+  originalLanguage?: string;
 };
 
 export type TvDetails = {
@@ -108,6 +130,48 @@ export type TvDetails = {
   firstAirDate?: string;
   seasons: TvSeason[];
   mediaInfo?: MediaInfo;
+  cast?: PersonCredit[];
+  genres?: NamedEntity[];
+  networks?: NamedEntity[];
+  originalLanguage?: string;
+};
+
+export type NamedEntity = {
+  id: number;
+  name: string;
+};
+
+export type EpisodeDetails = {
+  id: number;
+  name: string;
+  episodeNumber: number;
+  airDate?: string;
+  overview?: string;
+  stillPath: string | null;
+};
+
+export type SeasonDetails = {
+  id: number;
+  name: string;
+  seasonNumber: number;
+  overview?: string;
+  posterPath: string | null;
+  episodes: EpisodeDetails[];
+};
+
+export type PersonDetails = {
+  id: number;
+  name: string;
+  biography?: string;
+  knownForDepartment?: string;
+  placeOfBirth?: string;
+  profilePath: string | null;
+  credits: MediaItem[];
+};
+
+export type CollectionDetails = CollectionSummary & {
+  overview?: string;
+  parts: MediaItem[];
 };
 
 export type RequestedBy = {
@@ -181,4 +245,227 @@ export type ListRequestsQuery = {
   filter: RequestFilter;
   sort: 'added' | 'modified';
   sortDirection: 'asc' | 'desc';
+};
+
+export type UpdateRequestBody = {
+  mediaType: MediaType;
+  seasons?: number[];
+  is4k?: boolean;
+};
+
+export const issueFilters = ['all', 'open', 'resolved'] as const;
+export type IssueFilter = (typeof issueFilters)[number];
+export type IssueType = 1 | 2 | 3 | 4;
+export type IssueStatus = 1 | 2;
+
+export type IssueComment = {
+  id: number;
+  message: string;
+  user: RequestedBy;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type Issue = {
+  id: number;
+  issueType: number;
+  status: number;
+  problemSeason?: number;
+  problemEpisode?: number;
+  media: {
+    id: number;
+    tmdbId: number;
+    mediaType: MediaType;
+    status?: number;
+    status4k?: number;
+  };
+  createdBy: RequestedBy;
+  modifiedBy?: RequestedBy;
+  comments: IssueComment[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type IssueList = {
+  page: number;
+  pages: number;
+  results: Issue[];
+};
+
+export type IssueCount = {
+  total: number;
+  video: number;
+  audio: number;
+  subtitles: number;
+  others: number;
+  open: number;
+  closed: number;
+};
+
+export type CreateIssueBody = {
+  issueType: IssueType;
+  message: string;
+  mediaId: number;
+  problemSeason?: number;
+  problemEpisode?: number;
+};
+
+export type UserMainSettings = {
+  username?: string;
+  email?: string;
+  locale?: string;
+  discoverRegion?: string;
+  streamingRegion?: string;
+  originalLanguage?: string;
+  movieQuotaLimit?: number;
+  movieQuotaDays?: number;
+  tvQuotaLimit?: number;
+  tvQuotaDays?: number;
+  globalMovieQuotaLimit?: number;
+  globalMovieQuotaDays?: number;
+  globalTvQuotaLimit?: number;
+  globalTvQuotaDays?: number;
+  watchlistSyncMovies?: boolean;
+  watchlistSyncTv?: boolean;
+};
+
+export type NotificationSettings = {
+  notificationTypes: Record<string, number>;
+  emailEnabled?: boolean;
+  pgpKey?: string;
+  discordEnabled?: boolean;
+  discordEnabledTypes?: number;
+  discordIds?: string[];
+  pushbulletAccessToken?: string;
+  pushoverApplicationToken?: string;
+  pushoverUserKey?: string;
+  pushoverSound?: string;
+  telegramEnabled?: boolean;
+  telegramBotUsername?: string;
+  telegramChatId?: string;
+  telegramMessageThreadId?: string;
+  telegramSendSilently?: boolean;
+  webPushEnabled?: boolean;
+};
+
+export type WatchData = {
+  playCount: number;
+  recentlyWatched: {
+    id: number;
+    tmdbId: number;
+    mediaType: MediaType;
+  }[];
+};
+
+export type UserList = {
+  page: number;
+  pages: number;
+  results: SeerrUser[];
+};
+
+export type CreateUserBody = {
+  email: string;
+  username?: string;
+  password: string;
+};
+
+export type AdminMainSettings = {
+  appLanguage?: string;
+  applicationTitle?: string;
+  applicationUrl?: string;
+  hideAvailable?: boolean;
+  hideRequested?: boolean;
+  partialRequestsEnabled?: boolean;
+  localLogin?: boolean;
+  defaultPermissions?: number;
+  enableSpecialEpisodes?: boolean;
+  versionCheck?: boolean;
+};
+
+export type AdminNetworkSettings = {
+  csrfProtection: boolean;
+  forceIpv4First: boolean;
+  trustProxy: boolean;
+  dnsCacheEnabled: boolean;
+  dnsForceMinTtl?: number;
+  dnsForceMaxTtl?: number;
+};
+
+export type BlocklistItem = {
+  id: number;
+  tmdbId: number;
+  mediaType: MediaType;
+  title: string;
+  createdAt?: string;
+};
+
+export type BlocklistPage = {
+  page: number;
+  pages: number;
+  results: BlocklistItem[];
+};
+
+export type DiscoverSlider = {
+  id: number;
+  type: number;
+  title?: string;
+  isBuiltIn: boolean;
+  enabled: boolean;
+  data?: string;
+};
+
+export type OverrideRule = {
+  id: number;
+  users?: string;
+  genre?: string;
+  language?: string;
+  keywords?: string;
+  profileId?: number;
+  rootFolder?: string;
+  tags?: string;
+  radarrServiceId?: number;
+  sonarrServiceId?: number;
+};
+
+export type ServiceSummary = {
+  id: number;
+  kind: 'radarr' | 'sonarr';
+  name: string;
+  is4k: boolean;
+  isDefault: boolean;
+  syncEnabled: boolean;
+  preventSearch: boolean;
+};
+
+export type ServerJob = {
+  id: string;
+  name: string;
+  type?: string;
+  interval?: string;
+  nextExecutionTime?: string;
+  running: boolean;
+};
+
+export type CacheSummary = {
+  apiCaches: {
+    id: string;
+    name: string;
+    hits?: number;
+    misses?: number;
+    keys?: number;
+  }[];
+  imageCache: {
+    tmdbSize: number;
+    tmdbCount: number;
+    avatarSize: number;
+    avatarCount: number;
+  };
+  dns?: {
+    size?: number;
+    maxSize?: number;
+    hits?: number;
+    misses?: number;
+    failures?: number;
+    hitRate?: number;
+  };
 };

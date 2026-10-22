@@ -34,6 +34,8 @@ export default function DiscoverScreen() {
             { value: 'trending', label: feedLabel('trending') },
             { value: 'movies', label: feedLabel('movies') },
             { value: 'tv', label: feedLabel('tv') },
+            { value: 'upcomingMovies', label: feedLabel('upcomingMovies') },
+            { value: 'upcomingTv', label: feedLabel('upcomingTv') },
           ]}
           value={feed}
           onChange={setFeed}
@@ -51,6 +53,10 @@ function feedLabel(feed: DiscoverFeed): string {
       return en.discover.movies;
     case 'tv':
       return en.discover.series;
+    case 'upcomingMovies':
+      return en.discover.upcomingMovies;
+    case 'upcomingTv':
+      return en.discover.upcomingSeries;
     default:
       return assertNever(feed);
   }

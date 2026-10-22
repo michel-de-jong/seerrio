@@ -21,6 +21,7 @@ Other checks:
 npm run typecheck
 npm run lint
 npm test
+npm run release:check
 npm run smoke
 ```
 
@@ -68,6 +69,7 @@ An Apple Developer membership and App Store Connect app are required for iOS. A 
 * `docs/SEERR_API.md` — how this app calls Seerr
 * `docs/seerr-api.yml` — OpenAPI spec for Seerr 3.5.0
 * `docs/PROGRESS.md` — decisions and phase status
+* `docs/RELEASE_CHECKLIST.md` — API parity, security gates, store readiness, and device acceptance
 * `AGENTS.md` — instructions for coding agents
 
 ## License
