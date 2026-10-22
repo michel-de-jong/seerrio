@@ -8,19 +8,20 @@ const config: ExpoConfig = {
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   ios: {
-    supportsTablet: true,
-    bundleIdentifier: 'io.seerrlite.app',
+    supportsTablet: false,
+    bundleIdentifier: 'io.seerrmobile.app',
     infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
       NSAppTransportSecurity: {
         NSAllowsArbitraryLoads: true,
       },
     },
   },
   android: {
-    package: 'io.seerrlite.app',
+    package: 'io.seerrmobile.app',
     predictiveBackGestureEnabled: false,
     adaptiveIcon: {
-      backgroundColor: '#E6F4FE',
+      backgroundColor: '#1E1B4B',
       foregroundImage: './assets/android-icon-foreground.png',
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',
@@ -34,6 +35,15 @@ const config: ExpoConfig = {
     'expo-secure-store',
     'expo-image',
     'expo-font',
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/splash-icon.png',
+        imageWidth: 200,
+        resizeMode: 'contain',
+        backgroundColor: '#111827',
+      },
+    ],
     [
       'expo-build-properties',
       {

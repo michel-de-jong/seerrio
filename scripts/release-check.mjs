@@ -58,7 +58,7 @@ requireCheck(
 
 const config = read('app.config.ts');
 requireCheck(
-  config.includes("bundleIdentifier: 'io.seerrlite.app'") && config.includes("package: 'io.seerrlite.app'"),
+  config.includes("bundleIdentifier: 'io.seerrmobile.app'") && config.includes("package: 'io.seerrmobile.app'"),
   'Permanent iOS and Android identifiers are unchanged',
 );
 requireCheck(config.includes("userInterfaceStyle: 'automatic'"), 'Native appearance follows the system color scheme');

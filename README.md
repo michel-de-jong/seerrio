@@ -34,7 +34,7 @@ npm run smoke
 3. Forgot password appears only when the server can send email.
 4. API key sign-in is under Advanced. It acts as the admin account.
 
-The permanent iOS bundle identifier and Android package are `io.seerrlite.app`. Native builds permit cleartext HTTP so they can reach local self-hosted servers. HTTPS is strongly preferred because HTTP exposes credentials and session cookies to the network.
+The permanent iOS bundle identifier and Android package are `io.seerrmobile.app`. Native builds permit cleartext HTTP so they can reach local self-hosted servers. HTTPS is strongly preferred because HTTP exposes credentials and session cookies to the network.
 
 ## Native builds
 

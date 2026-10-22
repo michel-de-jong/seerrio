@@ -117,14 +117,17 @@ Accepted configuration warning: iOS ATS and Android cleartext traffic are enable
 
 Do not submit until all items below are complete:
 
-- Replace the Expo template icon assets with final licensed artwork.
+- Confirm the original app icon (`scripts/generate-icons.py`) is acceptable; it must not reuse Seerr's logo.
 - Link the project with `npx eas-cli init`; no EAS project ID or account credential belongs in git.
 - Create signed internal builds with `npx eas-cli build --platform all --profile preview`.
 - Install the preview build on a physical iPhone and Android phone.
 - For local builds, install a compatible Java runtime/Android SDK and full Xcode with CocoaPods 1.15.2 or newer. EAS builds do not depend on this Mac toolchain.
 - Resolve dependency audit findings without forcing an incompatible Expo/React Native upgrade.
 - Complete store privacy disclosures: the app has no analytics and contacts only the selected Seerr server plus `image.tmdb.org`.
-- Prepare store screenshots, support/privacy URLs, age rating, review notes, and release metadata.
+- Fill in the contact address in `docs/PRIVACY.md` and publish it at a public URL for both store listings.
+- Upload `store/play-icon-512.png` and `store/play-feature-graphic.png` to the Play listing.
+- Provide store reviewers with a public HTTPS Seerr demo server and a non-admin demo account.
+- Prepare store screenshots (iPhone only; iPad support is off), support URL, age rating, review notes, and release metadata.
 
 ## Physical-device acceptance pass
 
