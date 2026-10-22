@@ -87,6 +87,7 @@ function BlocklistRow({ item, canManage, removing, onRemove }: { item: Blocklist
     <View style={{ padding: theme.space.md, backgroundColor: theme.colors.surface, borderRadius: theme.radius.md, gap: theme.space.sm }}>
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel={en.media.openTitle(item.title)}
         onPress={() =>
           item.mediaType === 'movie'
             ? router.push({ pathname: '/movie/[id]', params: { id: String(item.tmdbId) } })

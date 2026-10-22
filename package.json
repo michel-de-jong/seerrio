@@ -46,7 +46,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
     "test": "jest --watchAll=false",
-    "smoke": "tsx scripts/smoke.ts"
+    "smoke": "tsx scripts/smoke.ts",
+    "release:check": "node scripts/release-check.mjs"
   },
   "jest": {
     "preset": "jest-expo",

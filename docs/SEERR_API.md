@@ -275,7 +275,7 @@ The values come from Seerr's `server/lib/permissions.ts`; re-check there if an u
 ## Images
 
 * Posters and backdrops: `https://image.tmdb.org/t/p/{size}{path}` (`path` starts with `/`). Posters w185 in grids, w342 on details; backdrops w780.
-* Avatars: `user.avatar` can be absolute or relative to the server. Resolve relative ones against the server URL and pass the auth header through expo-image's `source.headers`, only for the Seerr host. Never send the cookie or API key to image.tmdb.org or any other host.
+* Avatars: `user.avatar` can be absolute or relative to the server. Resolve relative ones against the server URL and pass the auth header through expo-image's `source.headers`, only for the Seerr host. Use memory-only caching for authenticated images. Never send the cookie or API key to image.tmdb.org or any other host.
 
 ## Errors
 
@@ -290,12 +290,13 @@ The values come from Seerr's `server/lib/permissions.ts`; re-check there if an u
 
 ## CSRF protection
 
-Seerr, Settings, Network, "Enable CSRF Protection" is off by default. When it's on, Seerr requires HTTPS and checks CSRF before it checks the password. `GET /status` sets `_csrf` (httpOnly) and `XSRF-TOKEN`. The app stores both with the session cookie, sends them on later requests, and sends the decoded `XSRF-TOKEN` as `X-XSRF-TOKEN` on POST and DELETE. A 403 whose message mentions CSRF drops those two cookies, loads `/status` again, and retries the change once. An API key does not skip this check.
+Seerr, Settings, Network, "Enable CSRF Protection" is off by default. When it's on, Seerr requires HTTPS and checks CSRF before it checks the password. `GET /status` sets `_csrf` (httpOnly) and `XSRF-TOKEN`. The app stores both with the session cookie, sends them on later requests, and sends the decoded `XSRF-TOKEN` as `X-XSRF-TOKEN` on every non-GET request, including POST, PUT, and DELETE. A 403 whose message mentions CSRF drops those two cookies, loads `/status` again, and retries the change once. An API key does not skip this check.
 
 ## Versions
 
 * Minimum supported: Seerr 3.0.0. Jellyseerr 2.x is close but untested.
 * After a Seerr upgrade: download the matching `seerr-api.yml`, run `npm run smoke`, compare the fixtures, and update this file.
+* Mobile endpoint coverage, intentional exclusions, and deferred OpenAPI areas are tracked in `RELEASE_CHECKLIST.md`.
 
 ## References
 
