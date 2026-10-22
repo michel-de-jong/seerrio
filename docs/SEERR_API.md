@@ -110,7 +110,6 @@ This app uses Seerr's native accounts ("local users"): an email and a password s
 | `POST /user/{id}/settings/notifications` | Update event masks | Round-trip the in-memory response so credentials are not erased |
 | `GET /user/{id}/settings/password` | Whether a password exists | Does not return the password |
 | `POST /user/{id}/settings/password` | Change password | Current password is required when one exists; minimum 8 characters |
-| `GET /user/{id}/watch_data` | Play count and recently watched media | Read-only |
 | `GET /user?take=&skip=&q=` | User administration list/search | MANAGE_USERS in the app |
 | `GET /user/{id}` | User detail | MANAGE_USERS |
 | `POST /user` | Create a native user | App sends email, optional username, and an explicit password |

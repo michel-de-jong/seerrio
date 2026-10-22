@@ -2,7 +2,7 @@
 
 This checklist compares Seerr Mobile with the vendored Seerr 3.5.0 OpenAPI file in `docs/seerr-api.yml`. “Implemented” means the mobile app exposes the useful operation, not necessarily every query option. Seerr remains the authorization boundary.
 
-The audit found 168 paths and 217 operations. Seerr Mobile calls 80 operations. Of the remainder, 91 were already intentional exclusions, deferred operations, or deprecated aliases; the other 46 are now explicitly classified below rather than silently treated as parity.
+The audit found 168 paths and 217 operations. Seerr Mobile calls 79 operations. Of the remainder, 92 are intentional exclusions, deferred operations, or deprecated aliases; the other 46 are explicitly classified below rather than silently treated as parity.
 
 ## Implemented mobile surface
 
@@ -45,7 +45,6 @@ Implementation: `src/api/endpoints/requests.ts` and `issues.ts`.
 - User list/search/create/batch permission update
 - User detail/delete, quota, and permission controls
 - User main settings, notification event preferences, and password
-- User watch data
 
 Implementation: `src/api/endpoints/users.ts`.
 
@@ -71,6 +70,7 @@ These stay in the Seerr web interface because they expose secrets, are destructi
 - Radarr, Sonarr, metadata-agent, Tautulli, and server-notification integration configuration or tests
 - Library scans and media-file deletion
 - Job schedule editing and DNS-entry inspection/flushing
+- User watch history, because Seerr serves it through Tautulli and the screen has no value when Tautulli is not configured
 - Push-subscription registration until Seerr provides an APNs, FCM, or Expo-compatible contract
 - Password-reset completion by GUID; the reset link remains a browser flow
 - Playback

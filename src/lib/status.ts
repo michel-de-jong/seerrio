@@ -86,21 +86,21 @@ export function statusLabel(status: DisplayStatus): string {
 export function statusColors(status: DisplayStatus): { background: string; text: string } {
   switch (status) {
     case 'pending':
-      return { background: '#F4E2B8', text: '#6B4E00' };
+      return { background: '#FEF3C7', text: '#92400E' };
     case 'processing':
     case 'approved':
-      return { background: '#D7E4F7', text: '#1D4E89' };
+      return { background: '#E0E7FF', text: '#3730A3' };
     case 'available':
-      return { background: '#D5EFE4', text: '#0E6B45' };
+      return { background: '#D1FAE5', text: '#065F46' };
     case 'partial':
-      return { background: '#D7F0EE', text: '#0F5F5C' };
+      return { background: '#E0F2FE', text: '#075985' };
     case 'declined':
     case 'failed':
-      return { background: '#F6D6D6', text: '#8C1D1D' };
+      return { background: '#FFE4E6', text: '#9F1239' };
     case 'blocklisted':
     case 'removed':
     case 'unknown':
-      return { background: '#E6E1D8', text: '#4A453E' };
+      return { background: '#E5E7EB', text: '#374151' };
     default:
       return assertNever(status);
   }

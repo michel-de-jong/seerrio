@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import type { MediaType, PublicSettings, TvDetails } from '@/api/types';
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
+import { SeasonChoice } from '@/components/SeasonChoice';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
@@ -129,21 +130,17 @@ function RequestForm({ mediaType, id }: { mediaType: MediaType; id: number }) {
               {showSpecials ? en.actions.hideSpecials : en.actions.showSpecials}
             </Text>
           </Pressable>
+          <Text style={{ color: theme.colors.muted }}>{en.request.selectedSeasons(selectedCount)}</Text>
           {seasons.map((season) => (
-            <Pressable
+            <SeasonChoice
               key={season.seasonNumber}
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: season.selected, disabled: !season.selectable }}
+              label={season.label}
+              detail={season.episodeCount == null ? undefined : en.media.episodes(season.episodeCount)}
               accessibilityLabel={en.request.seasonLabel(season.label)}
+              selected={season.selected}
               disabled={!season.selectable}
               onPress={() => setChosen((current) => toggle(current, season.seasonNumber))}
-              style={{ paddingVertical: 8, opacity: season.selectable ? 1 : 0.45 }}
-            >
-              <Text style={{ color: theme.colors.text }}>
-                {season.selected ? '✓ ' : '○ '}
-                {season.label}
-              </Text>
-            </Pressable>
+            />
           ))}
         </View>
       ) : null}
@@ -192,13 +189,14 @@ function visibleSeasons(
   is4k: boolean,
   partial: boolean,
   chosen: number[],
-): { seasonNumber: number; label: string; selected: boolean; selectable: boolean }[] {
+): { seasonNumber: number; label: string; episodeCount?: number; selected: boolean; selectable: boolean }[] {
   return show.seasons
     .filter((season) => showSpecials || season.seasonNumber !== 0)
     .filter((season) => isSeasonRequestable(show, season.seasonNumber, is4k))
     .map((season) => ({
       seasonNumber: season.seasonNumber,
       label: en.media.seasonName(season.seasonNumber, season.name),
+      episodeCount: season.episodeCount,
       selectable: partial,
       selected: partial ? chosen.includes(season.seasonNumber) : true,
     }));

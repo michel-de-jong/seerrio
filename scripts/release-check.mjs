@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const root = new URL('../', import.meta.url);
 const tracked = execFileSync('git', ['ls-files', '-z'], {
@@ -8,6 +8,7 @@ const tracked = execFileSync('git', ['ls-files', '-z'], {
 })
   .split('\0')
   .filter(Boolean);
+const present = tracked.filter((path) => existsSync(new URL(path, root)));
 
 const failures = [];
 const warnings = [];
@@ -38,14 +39,14 @@ const forbiddenTracked = tracked.filter(
 );
 requireCheck(forbiddenTracked.length === 0, 'No secrets, logs, signing files, or generated native projects are tracked');
 
-const sourceFiles = tracked.filter((path) => /\.(?:[cm]?[jt]sx?|json)$/i.test(path));
+const sourceFiles = present.filter((path) => /\.(?:[cm]?[jt]sx?|json)$/i.test(path));
 const publicSecretPattern = /EXPO_PUBLIC_[A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD|COOKIE)/;
 requireCheck(
   sourceFiles.every((path) => !publicSecretPattern.test(read(path))),
   'No secret-like EXPO_PUBLIC variables are present',
 );
 
-const runtimeFiles = tracked.filter((path) => /^(?:app|src)\/.*\.[jt]sx?$/.test(path));
+const runtimeFiles = present.filter((path) => /^(?:app|src)\/.*\.[jt]sx?$/.test(path));
 requireCheck(
   runtimeFiles.every((path) => !/\bconsole\.(?:log|debug|info|warn|error)\s*\(/.test(read(path))),
   'Application runtime contains no console logging',

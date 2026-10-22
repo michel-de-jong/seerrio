@@ -10,7 +10,6 @@ import {
   parseServices,
   parseUserMainSettings,
   parseUserList,
-  parseWatchData,
 } from './parse';
 
 describe('rich media parsers', () => {
@@ -106,18 +105,6 @@ describe('rich media parsers', () => {
       emailEnabled: true,
       pushbulletAccessToken: 'opaque-value',
     });
-  });
-
-  it('parses recently watched media', () => {
-    expect(
-      parseWatchData({
-        playCount: 3,
-        recentlyWatched: [
-          { id: 1, tmdbId: 2, mediaType: 'movie' },
-          { id: 3, tmdbId: 4, mediaType: 'person' },
-        ],
-      }),
-    ).toEqual({ playCount: 3, recentlyWatched: [{ id: 1, tmdbId: 2, mediaType: 'movie' }] });
   });
 
   it('parses paginated users and skips unsafe records', () => {

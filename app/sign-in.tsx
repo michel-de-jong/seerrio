@@ -66,6 +66,24 @@ export default function SignInScreen() {
         <Text style={{ color: theme.colors.muted, lineHeight: 22 }}>
           {settings.data?.applicationTitle ? `${settings.data.applicationTitle}. ${en.signIn.intro}` : en.signIn.intro}
         </Text>
+        {session.status === 'needsSignIn' ? (
+          <View
+            accessibilityLabel={en.signIn.serverLabel(session.serverUrl)}
+            style={{
+              gap: 4,
+              padding: theme.space.md,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              borderRadius: theme.radius.md,
+              backgroundColor: theme.colors.surface,
+            }}
+          >
+            <Text style={{ color: theme.colors.muted, fontSize: theme.font.small }}>{en.signIn.server}</Text>
+            <Text selectable style={{ color: theme.colors.text, fontWeight: '600' }}>
+              {session.serverUrl}
+            </Text>
+          </View>
+        ) : null}
         {hasStoredAuth ? (
           <>
             <Text accessibilityRole="alert" style={{ color: theme.colors.text }}>

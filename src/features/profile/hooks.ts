@@ -85,15 +85,3 @@ export function useChangePassword(userId: number) {
     },
   });
 }
-
-export function useWatchData(userId: number) {
-  const client = useSeerrClient();
-  return useQuery({
-    queryKey: queryKeys.watchData(userId),
-    enabled: client != null && userId > 0,
-    queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
-      return client.getWatchData(userId, signal);
-    },
-  });
-}
