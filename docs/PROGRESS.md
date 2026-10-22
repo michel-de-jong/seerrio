@@ -52,7 +52,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | 6 | Polish and QA | code complete on the logic; screens not exercised on a device | not checked | not checked |
 | 7 | Release builds | EAS configuration complete; account linking, signing, builds, and store submission pending | not checked | not checked |
 
-`npm run typecheck`, `npm run lint`, and `npm test` (56 tests) pass. `npm run smoke` was not run.
+`npm run typecheck`, `npm run lint`, and `npm test` (60 tests) pass. `npm run smoke` was not run.
 
 ### Mobile parity roadmap
 
@@ -61,7 +61,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | 1 | Product rename, opt-in persistent sessions, auth hardening | code complete; PR #8 |
 | 2 | Rich discovery, people, collections, recommendations, seasons and episodes | code complete |
 | 3 | Request detail/edit/retry and issues | code complete |
-| 4 | Personal settings, preferences, password and watch data | not started |
+| 4 | Personal settings, preferences, password and watch data | code complete |
 | 5 | User administration | not started |
 | 6 | Practical server administration | not started |
 | 7 | Parity/security audit and store readiness | not started |
@@ -108,6 +108,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 ## Log
 
+* 2026-10-22 · Personal settings · Added current-user account and region/language preferences, per-channel notification event masks, password changes, quota detail, and read-only watch history. Notification credentials are memory-only with immediate query GC, passwords never persist, and all query data clears when the server/user scope changes. Typecheck, lint, and 60 tests pass.
 * 2026-10-22 · Requests and issues · Added request details, manager-only pending edits and failed retries, plus permission-gated issue list/count/detail/create/comment/status/edit/delete flows. PUT now receives the same CSRF protection and single refresh as other mutations. Typecheck, lint, and 56 tests pass. Device confirmations remain open.
 * 2026-10-22 · Rich discovery · Added upcoming movie/series feeds, cast and people pages, movie collections, recommendations, similar titles, genre/language/studio/network browsing, and TV season/episode pages. Added defensive response parsing and tests. Typecheck, lint, and 53 tests pass. Verify each route and its loading, empty, error, offline, accessibility, and dark-mode state on both phones.
 * 2026-10-22 · Security foundation · Renamed the visible app to Seerr Mobile. Added opt-in native keychain persistence, memory-only default/browser sessions, origin-bound auth records, stale-response guards, HTTP risk confirmation, HTTPS-only API-key sign-in, restricted avatars, external-link confirmation, cookie deletion handling, and sanitized server messages.

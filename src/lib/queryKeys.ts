@@ -24,4 +24,8 @@ export const queryKeys = {
   issue: (id: number) => ['issue', id] as const,
   issueCount: ['issue-count'] as const,
   quota: (userId: number) => ['quota', userId] as const,
+  userMainSettings: (userId: number) => ['user-settings', userId, 'main'] as const,
+  userNotifications: (userId: number) => ['user-settings', userId, 'notifications'] as const,
+  passwordStatus: (userId: number) => ['user-settings', userId, 'password'] as const,
+  watchData: (userId: number) => ['user', userId, 'watch-data'] as const,
 };

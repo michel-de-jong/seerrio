@@ -14,6 +14,7 @@ import type {
   MediaType,
   MovieDetails,
   NamedEntity,
+  NotificationSettings,
   PersonCredit,
   PersonDetails,
   PublicSettings,
@@ -28,6 +29,8 @@ import type {
   ServerStatus,
   TvDetails,
   TvSeason,
+  UserMainSettings,
+  WatchData,
 } from './types';
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -548,6 +551,87 @@ export function parseIssueCount(value: unknown): IssueCount | null {
     open: count('open'),
     closed: count('closed'),
   };
+}
+
+export function parseUserMainSettings(value: unknown): UserMainSettings | null {
+  if (!isRecord(value)) return null;
+  const result: UserMainSettings = {};
+  const stringKeys = ['username', 'email', 'locale', 'discoverRegion', 'streamingRegion', 'originalLanguage'] as const;
+  const numberKeys = [
+    'movieQuotaLimit',
+    'movieQuotaDays',
+    'tvQuotaLimit',
+    'tvQuotaDays',
+    'globalMovieQuotaLimit',
+    'globalMovieQuotaDays',
+    'globalTvQuotaLimit',
+    'globalTvQuotaDays',
+  ] as const;
+  for (const key of stringKeys) {
+    const field = stringField(value, key);
+    if (field !== undefined) result[key] = field;
+  }
+  for (const key of numberKeys) {
+    const field = numberField(value, key);
+    if (field !== undefined) result[key] = field;
+  }
+  if (typeof value.watchlistSyncMovies === 'boolean') result.watchlistSyncMovies = value.watchlistSyncMovies;
+  if (typeof value.watchlistSyncTv === 'boolean') result.watchlistSyncTv = value.watchlistSyncTv;
+  return result;
+}
+
+export function parseNotificationSettings(value: unknown): NotificationSettings | null {
+  if (!isRecord(value)) return null;
+  const rawTypes = isRecord(value.notificationTypes) ? value.notificationTypes : {};
+  const notificationTypes = Object.fromEntries(
+    Object.entries(rawTypes).filter((entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1])),
+  );
+  const result: NotificationSettings = { notificationTypes };
+  const stringKeys = [
+    'pgpKey',
+    'pushbulletAccessToken',
+    'pushoverApplicationToken',
+    'pushoverUserKey',
+    'pushoverSound',
+    'telegramBotUsername',
+    'telegramChatId',
+    'telegramMessageThreadId',
+  ] as const;
+  const booleanKeys = [
+    'emailEnabled',
+    'discordEnabled',
+    'telegramEnabled',
+    'telegramSendSilently',
+    'webPushEnabled',
+  ] as const;
+  for (const key of stringKeys) {
+    const field = stringField(value, key);
+    if (field !== undefined) result[key] = field;
+  }
+  for (const key of booleanKeys) {
+    if (typeof value[key] === 'boolean') result[key] = value[key];
+  }
+  const discordEnabledTypes = numberField(value, 'discordEnabledTypes');
+  if (discordEnabledTypes !== undefined) result.discordEnabledTypes = discordEnabledTypes;
+  if (Array.isArray(value.discordIds)) {
+    result.discordIds = value.discordIds.filter((id): id is string => typeof id === 'string');
+  }
+  return result;
+}
+
+export function parseWatchData(value: unknown): WatchData | null {
+  if (!isRecord(value)) return null;
+  const playCount = numberField(value, 'playCount') ?? 0;
+  const recentlyWatched = Array.isArray(value.recentlyWatched)
+    ? value.recentlyWatched.flatMap((item) => {
+        if (!isRecord(item)) return [];
+        const id = numberField(item, 'id');
+        const tmdbId = numberField(item, 'tmdbId');
+        const mediaType = mediaTypeOf(item.mediaType);
+        return id === undefined || tmdbId === undefined || !mediaType ? [] : [{ id, tmdbId, mediaType }];
+      })
+    : [];
+  return { playCount, recentlyWatched };
 }
 
 export function parseRequestList(value: unknown): RequestList | null {

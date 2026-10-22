@@ -14,7 +14,7 @@ Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebas
 * Request a movie, or explicit TV seasons. Optional 4K when the server and the user allow it.
 * List and inspect requests. Managers can edit pending requests, approve, decline, and retry failed requests. The requester can remove a pending request; a manager can remove any request.
 * Report and follow media issues. Supported users can list and inspect issues, comment, resolve/reopen, and edit or delete their own comments; moderators can manage all issues.
-* Profile with quota, server, and sign out.
+* Profile with quota, server, account preferences, notification preferences, password change, watch history, and sign out.
 
 ## Out of scope
 
@@ -104,6 +104,11 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 * Relative avatars are resolved against the server. Auth headers are attached only for the Seerr host, never for `image.tmdb.org`.
 * Show movie and series quota, the server URL, and the Seerr version.
 * Say when the session is an API key.
+* Current users can update their display name, email, locale, discovery region, streaming region, and original language. Existing quota and watchlist-sync fields are round-tripped unchanged.
+* Notification event masks can be changed per configured channel. Channel credentials are never displayed or persisted by the app; they stay only in an in-memory query with immediate garbage collection after the screen closes and are round-tripped so saving masks does not erase them.
+* Password changes require the current password when Seerr says one exists, an 8-character minimum, matching confirmation, and explicit confirmation. Password fields are never persisted and clear after success.
+* Watch data shows the server play count and recently watched titles. It is read-only.
+* TanStack Query data is cleared whenever the server or signed-in user changes, including sign-out.
 
 ## Every screen
 

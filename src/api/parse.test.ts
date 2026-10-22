@@ -1,4 +1,12 @@
-import { parseCollection, parseIssue, parsePerson, parseSeason } from './parse';
+import {
+  parseCollection,
+  parseIssue,
+  parseNotificationSettings,
+  parsePerson,
+  parseSeason,
+  parseUserMainSettings,
+  parseWatchData,
+} from './parse';
 
 describe('rich media parsers', () => {
   it('parses a TV season and ignores malformed episodes', () => {
@@ -68,5 +76,42 @@ describe('rich media parsers', () => {
       media: { id: 41, tmdbId: 42, mediaType: 'movie' },
       comments: [{ id: 43, message: 'Playback problem' }],
     });
+  });
+
+  it('parses current-user preferences without accepting malformed fields', () => {
+    expect(
+      parseUserMainSettings({
+        username: 'Example',
+        email: 'user@example.test',
+        discoverRegion: 'NL',
+        movieQuotaLimit: 'invalid',
+      }),
+    ).toEqual({ username: 'Example', email: 'user@example.test', discoverRegion: 'NL' });
+  });
+
+  it('keeps notification credentials only in the in-memory response object for safe round trips', () => {
+    expect(
+      parseNotificationSettings({
+        notificationTypes: { email: 14, invalid: 'nope' },
+        emailEnabled: true,
+        pushbulletAccessToken: 'opaque-value',
+      }),
+    ).toEqual({
+      notificationTypes: { email: 14 },
+      emailEnabled: true,
+      pushbulletAccessToken: 'opaque-value',
+    });
+  });
+
+  it('parses recently watched media', () => {
+    expect(
+      parseWatchData({
+        playCount: 3,
+        recentlyWatched: [
+          { id: 1, tmdbId: 2, mediaType: 'movie' },
+          { id: 3, tmdbId: 4, mediaType: 'person' },
+        ],
+      }),
+    ).toEqual({ playCount: 3, recentlyWatched: [{ id: 1, tmdbId: 2, mediaType: 'movie' }] });
   });
 });

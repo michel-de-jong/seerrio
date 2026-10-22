@@ -26,14 +26,25 @@ import {
 } from './endpoints/requests';
 import { search } from './endpoints/search';
 import { getPublicSettings, getStatus } from './endpoints/settings';
-import { getQuota } from './endpoints/users';
+import {
+  changePassword,
+  getNotificationSettings,
+  getPasswordStatus,
+  getQuota,
+  getUserMainSettings,
+  getWatchData,
+  updateNotificationSettings,
+  updateUserMainSettings,
+} from './endpoints/users';
 import type {
   CreateIssueBody,
   CreateRequestBody,
   DiscoverFeed,
   IssueFilter,
   ListRequestsQuery,
+  NotificationSettings,
   UpdateRequestBody,
+  UserMainSettings,
 } from './types';
 
 export function createSeerrClient(options: SeerrClientOptions) {
@@ -88,6 +99,17 @@ export function createSeerrClient(options: SeerrClientOptions) {
     updateIssueComment: (id: number, message: string) => updateIssueComment(request, id, message),
     deleteIssueComment: (id: number) => deleteIssueComment(request, id),
     getQuota: (userId: number, signal?: AbortSignal) => getQuota(request, userId, signal),
+    getUserMainSettings: (userId: number, signal?: AbortSignal) => getUserMainSettings(request, userId, signal),
+    updateUserMainSettings: (userId: number, settings: UserMainSettings) =>
+      updateUserMainSettings(request, userId, settings),
+    getNotificationSettings: (userId: number, signal?: AbortSignal) =>
+      getNotificationSettings(request, userId, signal),
+    updateNotificationSettings: (userId: number, settings: NotificationSettings) =>
+      updateNotificationSettings(request, userId, settings),
+    getPasswordStatus: (userId: number, signal?: AbortSignal) => getPasswordStatus(request, userId, signal),
+    changePassword: (userId: number, currentPassword: string | undefined, newPassword: string) =>
+      changePassword(request, userId, currentPassword, newPassword),
+    getWatchData: (userId: number, signal?: AbortSignal) => getWatchData(request, userId, signal),
   };
 }
 

@@ -309,3 +309,50 @@ export type CreateIssueBody = {
   problemSeason?: number;
   problemEpisode?: number;
 };
+
+export type UserMainSettings = {
+  username?: string;
+  email?: string;
+  locale?: string;
+  discoverRegion?: string;
+  streamingRegion?: string;
+  originalLanguage?: string;
+  movieQuotaLimit?: number;
+  movieQuotaDays?: number;
+  tvQuotaLimit?: number;
+  tvQuotaDays?: number;
+  globalMovieQuotaLimit?: number;
+  globalMovieQuotaDays?: number;
+  globalTvQuotaLimit?: number;
+  globalTvQuotaDays?: number;
+  watchlistSyncMovies?: boolean;
+  watchlistSyncTv?: boolean;
+};
+
+export type NotificationSettings = {
+  notificationTypes: Record<string, number>;
+  emailEnabled?: boolean;
+  pgpKey?: string;
+  discordEnabled?: boolean;
+  discordEnabledTypes?: number;
+  discordIds?: string[];
+  pushbulletAccessToken?: string;
+  pushoverApplicationToken?: string;
+  pushoverUserKey?: string;
+  pushoverSound?: string;
+  telegramEnabled?: boolean;
+  telegramBotUsername?: string;
+  telegramChatId?: string;
+  telegramMessageThreadId?: string;
+  telegramSendSilently?: boolean;
+  webPushEnabled?: boolean;
+};
+
+export type WatchData = {
+  playCount: number;
+  recentlyWatched: {
+    id: number;
+    tmdbId: number;
+    mediaType: MediaType;
+  }[];
+};

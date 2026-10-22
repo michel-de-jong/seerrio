@@ -1,9 +1,9 @@
 import 'react-native-gesture-handler';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -53,6 +53,21 @@ function RootNavigator() {
   const { session } = useSession();
   const router = useRouter();
   const segments = useSegments();
+  const queryClient = useQueryClient();
+  const cacheScope =
+    session.status === 'signedIn'
+      ? `${session.serverUrl}:${session.user.id}`
+      : session.status === 'needsSignIn'
+        ? session.serverUrl
+        : session.status;
+  const previousCacheScope = useRef(cacheScope);
+
+  useEffect(() => {
+    if (previousCacheScope.current !== cacheScope) {
+      queryClient.clear();
+      previousCacheScope.current = cacheScope;
+    }
+  }, [cacheScope, queryClient]);
 
   useEffect(() => {
     if (session.status === 'loading') return;
@@ -106,6 +121,10 @@ function RootNavigator() {
         <Stack.Screen name="request/[id]" options={{ title: en.requests.detailTitle }} />
         <Stack.Screen name="issue/create" options={{ presentation: 'modal', title: en.issues.report }} />
         <Stack.Screen name="issue/[id]" options={{ title: en.issues.detailTitle }} />
+        <Stack.Screen name="profile/settings" options={{ title: en.profile.settings }} />
+        <Stack.Screen name="profile/notifications" options={{ title: en.profile.notifications }} />
+        <Stack.Screen name="profile/password" options={{ title: en.profile.password }} />
+        <Stack.Screen name="profile/watch-data" options={{ title: en.profile.watchHistory }} />
       </Stack>
     </>
   );

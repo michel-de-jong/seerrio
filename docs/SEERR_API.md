@@ -104,6 +104,13 @@ This app uses Seerr's native accounts ("local users"): an email and a password s
 | `PUT /issueComment/{id}` | Edit a comment | Comment owner or MANAGE_ISSUES |
 | `DELETE /issueComment/{id}` | Delete a comment | Comment owner or MANAGE_ISSUES |
 | `GET /user/{id}/quota` | Quota | `movie` and `tv`, each with `limit`, `days`, `used`, `remaining`, `restricted` |
+| `GET /user/{id}/settings/main` | Current-user preferences | Viewing another user requires MANAGE_USERS |
+| `POST /user/{id}/settings/main` | Update current-user preferences | Round-trip fields not edited by the app |
+| `GET /user/{id}/settings/notifications` | Notification preferences | Response can contain channel credentials; never persist or display them |
+| `POST /user/{id}/settings/notifications` | Update event masks | Round-trip the in-memory response so credentials are not erased |
+| `GET /user/{id}/settings/password` | Whether a password exists | Does not return the password |
+| `POST /user/{id}/settings/password` | Change password | Current password is required when one exists; minimum 8 characters |
+| `GET /user/{id}/watch_data` | Play count and recently watched media | Read-only |
 
 Search and discover items have `mediaType` (`movie`, `tv`, `person`, sometimes others), `id` (TMDB id), `title` (movies) or `name` (series), `releaseDate` or `firstAirDate`, `posterPath`, `backdropPath`, `overview`, and an optional `mediaInfo` with `status` and `status4k`. Show only `movie` and `tv`.
 

@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { Alert, ScrollView, Text, View } from 'react-native';
 
 import { useSession } from '@/auth/AuthProvider';
@@ -102,6 +103,10 @@ function ProfileBody(props: {
       <Text style={{ color: theme.colors.text }}>
         {en.profile.version}: {status.data?.version ?? en.status.unknown}
       </Text>
+      <Button label={en.profile.settings} onPress={() => router.push('/profile/settings')} />
+      <Button label={en.profile.notifications} variant="secondary" onPress={() => router.push('/profile/notifications')} />
+      <Button label={en.profile.password} variant="secondary" onPress={() => router.push('/profile/password')} />
+      <Button label={en.profile.watchHistory} variant="secondary" onPress={() => router.push('/profile/watch-data')} />
       <Button
         label={en.actions.signOut}
         variant="danger"
