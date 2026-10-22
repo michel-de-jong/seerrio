@@ -1,5 +1,5 @@
 import { assertNever } from './assertNever';
-import { csrfToken, mergeCookieHeader, parseSetCookie, withoutCsrfCookies } from './cookies';
+import { csrfToken, mergeCookieHeader, parseSetCookie, selectSeerrCookies, withoutCsrfCookies } from './cookies';
 import { isAbortError, messageFromBody, SeerrError } from './errors';
 import { buildSeerrUrl, normalizeServerUrl } from './url';
 
@@ -87,7 +87,8 @@ export function createRequest(options: SeerrClientOptions): SeerrRequest {
         signal: controller.signal,
       });
       const text = await response.text();
-      const merged = mergeCookieHeader(cookie, parseSetCookie(setCookieHeader(response.headers)));
+      const updates = selectSeerrCookies(cookie, parseSetCookie(setCookieHeader(response.headers)));
+      const merged = mergeCookieHeader(cookie, updates);
       if (merged && merged !== cookie && options.onSetCookie) {
         await options.onSetCookie(merged);
       }
@@ -181,6 +182,7 @@ async function refreshCsrf(
     signal,
   });
   await response.text();
-  const merged = mergeCookieHeader(kept, parseSetCookie(setCookieHeader(response.headers)));
+  const updates = selectSeerrCookies(kept, parseSetCookie(setCookieHeader(response.headers)));
+  const merged = mergeCookieHeader(kept, updates);
   if (options.onSetCookie) await options.onSetCookie(merged ?? '');
 }

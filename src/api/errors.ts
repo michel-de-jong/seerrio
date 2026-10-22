@@ -7,11 +7,12 @@ export class SeerrError extends Error {
   readonly kind: SeerrErrorKind;
 
   constructor(input: { status: number; path: string; serverMessage: string; kind: SeerrErrorKind }) {
-    super(input.serverMessage || input.kind);
+    const serverMessage = sanitizeServerMessage(input.serverMessage);
+    super(serverMessage || input.kind);
     this.name = 'SeerrError';
     this.status = input.status;
     this.path = input.path;
-    this.serverMessage = input.serverMessage;
+    this.serverMessage = serverMessage;
     this.kind = input.kind;
   }
 }
@@ -22,6 +23,10 @@ export function messageFromBody(body: unknown): string {
   if (typeof record.message === 'string' && record.message.trim()) return record.message;
   if (typeof record.error === 'string' && record.error.trim()) return record.error;
   return '';
+}
+
+export function sanitizeServerMessage(value: string): string {
+  return value.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
 }
 
 export function unexpectedResponse(path: string): SeerrError {

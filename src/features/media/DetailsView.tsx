@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
 import * as Linking from 'expo-linking';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 
 import type { MediaType, MovieDetails, TvDetails } from '@/api/types';
 import { useSession } from '@/auth/AuthProvider';
@@ -17,7 +17,7 @@ import { mediaYear } from '@/lib/format';
 import { canRequest4kMovie, canRequest4kTv, canRequestMovie, canRequestTv } from '@/lib/permissions';
 import { isQualityRequestable } from '@/lib/requestability';
 import { mediaDisplayStatus } from '@/lib/status';
-import { posterUrl, safeHttpUrl } from '@/lib/tmdb';
+import { httpHost, posterUrl, safeHttpUrl } from '@/lib/tmdb';
 import { useTheme } from '@/theme/useTheme';
 
 type Props = {
@@ -105,7 +105,16 @@ export function DetailsView({ mediaType, id }: Props) {
           <Text style={{ color: theme.colors.muted }}>{en.media.blocklisted}</Text>
         ) : null}
         {libraryUrl ? (
-          <Button label={en.actions.openLibrary} variant="secondary" onPress={() => void Linking.openURL(libraryUrl)} />
+          <Button
+            label={en.actions.openLibrary}
+            variant="secondary"
+            onPress={() =>
+              Alert.alert(en.media.leaveAppTitle, en.media.leaveAppBody(httpHost(libraryUrl)), [
+                { text: en.actions.cancel, style: 'cancel' },
+                { text: en.actions.continue, onPress: () => void Linking.openURL(libraryUrl) },
+              ])
+            }
+          />
         ) : null}
         {mediaType === 'tv' ? <SeasonList show={tvOf(query.data)} /> : null}
       </View>

@@ -3,6 +3,8 @@ import { Platform } from 'react-native';
 
 export const sessionKeys = {
   serverUrl: 'seerr.serverUrl',
+  authRecord: 'seerr.auth.v1',
+  // Legacy keys are removed during migration and must not be written again.
   cookie: 'seerr.cookie',
   apiKey: 'seerr.apiKey',
   user: 'seerr.user',
@@ -34,7 +36,10 @@ export function createMapSessionStorage(store: KeyValueStore): SessionStorage {
 
 const nativeSessionStorage: SessionStorage = {
   get: (key) => SecureStore.getItemAsync(key),
-  set: (key, value) => SecureStore.setItemAsync(key, value),
+  set: (key, value) =>
+    SecureStore.setItemAsync(key, value, {
+      keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+    }),
   remove: (key) => SecureStore.deleteItemAsync(key),
 };
 
@@ -49,14 +54,9 @@ function browserSessionStorage(): SessionStorage {
       memory.delete(key);
     },
   };
-  try {
-    if (typeof localStorage !== 'undefined') return createMapSessionStorage(localStorage);
-  } catch {
-    // A browser can block localStorage. The preview still opens, without a saved session.
-  }
   return createMapSessionStorage(memoryStore);
 }
 
-// SecureStore is iOS and Android only. The browser preview keeps the session in localStorage.
+// SecureStore is iOS and Android only. Browser preview auth is deliberately process-memory only.
 export const secureSessionStorage: SessionStorage =
   Platform.OS === 'web' ? browserSessionStorage() : nativeSessionStorage;

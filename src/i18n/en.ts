@@ -1,5 +1,5 @@
 export const en = {
-  appName: 'Seerr Lite',
+  appName: 'Seerr Mobile',
   actions: {
     retry: 'Try again',
     cancel: 'Cancel',
@@ -43,7 +43,7 @@ export const en = {
     urlLabel: 'Server URL',
     urlPlaceholder: 'https://seerr.example.test',
     invalidUrl: 'Enter a full http or https address, without a username or password in it.',
-    unsupportedVersion: (version: string) => `This server is Seerr ${version}. Seerr Lite needs 3.0.0 or newer.`,
+    unsupportedVersion: (version: string) => `This server is Seerr ${version}. Seerr Mobile needs 3.0.0 or newer.`,
     notInitialized: 'This Seerr server has not finished setup yet. Complete setup in a browser, then try again.',
     localLoginOff: 'Local sign-in is turned off on this server. An admin needs to enable it under Settings, Users.',
     checking: 'Checking the server',
@@ -58,6 +58,10 @@ export const en = {
       `The server failed while checking Seerr — HTTP ${status}${message ? `: ${message}` : '.'}`,
     httpError: (status: number, message: string) =>
       `The address returned HTTP ${status}${message ? `: ${message}` : ' instead of a valid Seerr response.'}`,
+    httpTitle: 'Use an insecure connection?',
+    httpWarning:
+      'HTTP does not encrypt your password, session, requests, or viewing information. Anyone on the network may be able to read them. Use HTTPS whenever possible.',
+    useHttp: 'Use HTTP',
   },
   signIn: {
     title: 'Sign in',
@@ -67,12 +71,17 @@ export const en = {
     rejected: (status: number, message: string) =>
       `Seerr rejected this native-account sign-in (HTTP ${status}${message ? `: ${message}` : ''}). Confirm you are using the account’s Email field, not its display name, and that a password is set under Seerr Settings → Users.`,
     sessionMissing: 'The password was accepted, but the session did not start. Try again.',
+    staySignedIn: 'Stay signed in on this device',
+    staySignedInHint:
+      'Stores the session in this device’s secure keychain. Seerr can still expire or revoke it, normally after about 30 days.',
+    webSession: 'Browser preview sessions are temporary and disappear when the page process ends.',
     unavailable: 'Seerr could not sign you in. Check that local sign-in is enabled, then try again.',
     forgot: 'Forgot password?',
     advanced: 'Advanced',
     apiKeyLabel: 'API key',
     apiKeyWarning:
       'An API key signs in as the Seerr admin. Requests are attributed to the admin and approved automatically. Use this only on the owner’s device.',
+    apiKeyRequiresHttps: 'API-key sign-in requires an HTTPS server address.',
     storedSession: 'A saved sign-in is on this device, but the server did not respond.',
   },
   forgotPassword: {
@@ -105,6 +114,8 @@ export const en = {
     episodes: (count: number) => `${count} episodes`,
     runtime: (minutes: number) => `${minutes} min`,
     blocklisted: 'An admin has blocklisted this title, so it cannot be requested.',
+    leaveAppTitle: 'Open another app or website?',
+    leaveAppBody: (host: string) => `Seerr provided a link to ${host}. Continue only if you trust this destination.`,
     qualityHd: 'HD',
     quality4k: '4K',
   },

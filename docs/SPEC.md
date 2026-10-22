@@ -1,4 +1,4 @@
-# Seerr Lite specification
+# Seerr Mobile specification
 
 Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebase for iOS and Android. This file is the acceptance criteria. `docs/SEERR_API.md` wins on anything about the server.
 
@@ -31,6 +31,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 
 * Require a non-empty email or username. Do not check email format.
 * Require a password. Do not store it. Tag the fields for the platform password manager.
+* “Stay signed in on this device” is off by default. When off, credentials, CSRF state, and cached user stay in process memory only. When on, store one versioned, server-bound auth record in the native secure keychain. Seerr may still expire or revoke the session.
 * Read the whole sign-in response, store `connect.sid` (or the fallback session cookie) as `name=value` without decoding, then load `/auth/me` and use that user everywhere.
 * Sign in only with `POST /auth/local` (native Seerr accounts).
 * A 401 or 403 on `/auth/local` says Seerr rejected the native-account sign-in, includes the safe HTTP status and server message, and tells the user to check the account's Email field and Seerr password. When CSRF protection is on, send the CSRF cookies and `X-XSRF-TOKEN`, and retry the change once after refreshing them. If it still fails, say CSRF protection blocked the request. A 5xx from Seerr says to check that local sign-in is enabled when public settings say it is off.
