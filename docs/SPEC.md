@@ -2,8 +2,6 @@
 
 Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebase for iOS and Android. This file is the acceptance criteria. `docs/SEERR_API.md` wins on anything about the server.
 
-`PLANNING.md` was not in the repository. This spec is the behavior taken from `AGENTS.md`, `SEERR_API.md`, and the phase list in `docs/PROGRESS.md`.
-
 ## In scope
 
 * Save a server URL and check `GET /status` and `GET /settings/public`.
@@ -18,7 +16,7 @@ Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebas
 
 ## Out of scope
 
-Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push notifications until Seerr exposes a suitable mobile registration flow. Analytics. Languages other than English. Store submission.
+Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push notifications until Seerr exposes a suitable mobile registration flow. Analytics. Languages other than English.
 
 ## Connect
 
@@ -134,7 +132,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 
 ## Every screen
 
-Loading, empty, error with retry, and offline. Labels for controls. Light and dark mode from the system theme. Status colors come from `src/lib/status.ts`. Permission checks come from `src/lib/permissions.ts`. Copy comes from `src/i18n/en.ts`.
+Loading, empty, error with retry, and offline. Labels for controls. Light and dark mode follow the appearance choice in Profile. Status colors come from `src/lib/status.ts`. Permission checks come from `src/lib/permissions.ts`. Copy comes from `src/i18n/en.ts`.
 
 ## Release acceptance
 

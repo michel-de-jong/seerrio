@@ -17,18 +17,18 @@ Seerr Mobile is an unofficial iOS and Android client for a self-hosted Seerr ser
 ## Stack (don't change without asking)
 
 * Expo SDK as pinned in `package.json`, managed workflow with Continuous Native Generation. `ios/` and `android/` are generated and never committed.
-* Everything must run in Expo Go: no libraries with custom native code unless I approve it.
+* Everything must run in Expo Go: no libraries with custom native code unless the maintainer approves it.
 * TypeScript (strict), expo-router (routes in `app/`), TanStack Query v5 for server state, React context for the session, expo-secure-store for secrets, expo-image for posters.
 * Styling with `StyleSheet` and tokens from `src/theme`. No UI kits, NativeWind, axios, lodash, Redux or Zustand.
 * Add Expo/React Native packages with `npx expo install <pkg>` so versions match the SDK. Log every new dependency and the reason in PROGRESS.md.
 
 ## Commands
 
-* `npx expo start`: dev server; I open it in Expo Go (add `--tunnel` when the phone is on another network).
+* `npx expo start`: dev server. Open it in Expo Go, adding `--tunnel` when the phone is on another network.
 * `npm run typecheck`: `tsc --noEmit`.
 * `npm run lint`: `expo lint`.
 * `npm test`: Jest with the jest-expo preset.
-* `npm run smoke`: read-only live checks against my Seerr using `.env.local`; prints a pass/fail table and writes sanitized fixtures.
+* `npm run smoke`: read-only live checks against the Seerr server configured in `.env.local`; prints a pass/fail table and writes sanitized fixtures.
 * `npx expo-doctor@latest`: dependency health.
 
 Run typecheck, lint and test after every change set, and fix failures before reporting back.
@@ -95,13 +95,13 @@ scripts/smoke.ts             live API checks (Node via tsx)
 * Never hardcode server URLs, emails, user ids or credentials, including in tests and fixtures (use `https://seerr.example.test` and `user@example.test`).
 * Ask before changing bundle ids, ATS or cleartext settings in `app.config.ts`, or `eas.json`.
 
-## How to work with me
+## Working agreement
 
 * Start every task with a short plan: files to create or change, assumptions, questions. Then implement in small steps.
 * If SPEC.md is silent or ambiguous, ask instead of inventing behavior, and record the answer under Decisions in PROGRESS.md.
 * Unsure what the server returns? Check fixtures and the spec. If still unsure, add a read-only probe to `scripts/smoke.ts` and run `npm run smoke`.
-* Never send write calls (create, approve, decline, delete, password reset) to my server from scripts or tests.
-* Don't upgrade the Expo SDK or major versions unless I ask. No drive-by refactors.
+* Never send write calls (create, approve, decline, delete, password reset) to a live Seerr server from scripts or tests.
+* Don't upgrade the Expo SDK or major versions unless asked. No drive-by refactors.
 
 ## Definition of done
 
@@ -109,4 +109,4 @@ scripts/smoke.ts             live API checks (Node via tsx)
 * The feature meets its acceptance criteria in SPEC.md.
 * Loading, empty, error and offline states, accessibility labels and dark mode are covered.
 * PROGRESS.md is updated: what changed, how to verify, open questions.
-* You tell me exactly what to check on my iPhone and my Android phone.
+* Report the exact checks to run on a physical iPhone and Android phone.
