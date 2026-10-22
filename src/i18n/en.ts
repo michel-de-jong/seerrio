@@ -47,13 +47,25 @@ export const en = {
     notInitialized: 'This Seerr server has not finished setup yet. Complete setup in a browser, then try again.',
     localLoginOff: 'Local sign-in is turned off on this server. An admin needs to enable it under Settings, Users.',
     checking: 'Checking the server',
+    unreachable:
+      'This phone could not reach that address. Check the protocol, hostname, port, Wi-Fi or VPN, and the server’s TLS certificate.',
+    timeout: 'That address did not respond within 15 seconds. Check that it is reachable from this phone.',
+    notSeerr: 'The address responded, but it did not return the Seerr API. Check the URL and any reverse-proxy path.',
+    apiNotFound: 'The address does not expose Seerr at /api/v1. Check the URL and any reverse-proxy path.',
+    apiBlocked: (status: number) =>
+      `The address reached a server, but it blocked the Seerr status check (HTTP ${status}). Check reverse-proxy authentication and access rules.`,
+    serverError: (status: number, message: string) =>
+      `The server failed while checking Seerr — HTTP ${status}${message ? `: ${message}` : '.'}`,
+    httpError: (status: number, message: string) =>
+      `The address returned HTTP ${status}${message ? `: ${message}` : ' instead of a valid Seerr response.'}`,
   },
   signIn: {
     title: 'Sign in',
     intro: 'Use the email and password of your Seerr account.',
     emailLabel: 'Email',
     passwordLabel: 'Password',
-    wrongCredentials: 'Wrong email or password.',
+    rejected: (status: number, message: string) =>
+      `Seerr rejected this native-account sign-in (HTTP ${status}${message ? `: ${message}` : ''}). Confirm you are using the account’s Email field, not its display name, and that a password is set under Seerr Settings → Users.`,
     sessionMissing: 'The password was accepted, but the session did not start. Try again.',
     unavailable: 'Seerr could not sign you in. Check that local sign-in is enabled, then try again.',
     forgot: 'Forgot password?',
