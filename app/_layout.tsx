@@ -1,9 +1,10 @@
 import 'react-native-gesture-handler';
 
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
+import * as SystemUI from 'expo-system-ui';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -64,6 +65,26 @@ function RootNavigator() {
         ? session.serverUrl
         : session.status;
   const previousCacheScope = useRef(cacheScope);
+  const navigationTheme = useMemo(() => {
+    const base = theme.dark ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      dark: theme.dark,
+      colors: {
+        ...base.colors,
+        primary: theme.colors.accent,
+        background: theme.colors.background,
+        card: theme.colors.surface,
+        text: theme.colors.text,
+        border: theme.colors.border,
+        notification: theme.colors.danger,
+      },
+    };
+  }, [theme]);
+
+  useEffect(() => {
+    void SystemUI.setBackgroundColorAsync(theme.colors.background);
+  }, [theme.colors.background]);
 
   useEffect(() => {
     if (previousCacheScope.current !== cacheScope) {
@@ -100,7 +121,7 @@ function RootNavigator() {
   }
 
   return (
-    <>
+    <ThemeProvider value={navigationTheme}>
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
@@ -142,6 +163,6 @@ function RootNavigator() {
         <Stack.Screen name="admin/jobs" options={{ title: en.serverAdmin.jobs }} />
         <Stack.Screen name="admin/caches" options={{ title: en.serverAdmin.caches }} />
       </Stack>
-    </>
+    </ThemeProvider>
   );
 }

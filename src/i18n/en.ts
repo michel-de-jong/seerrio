@@ -287,7 +287,7 @@ export const en = {
   },
   appearance: {
     title: 'Appearance',
-    hint: 'Dark mode uses Seerr’s indigo and gray palette. System follows this phone’s setting.',
+    hint: 'Dark matches Seerr’s web interface and is the default. System follows this phone’s setting.',
     system: 'System',
     light: 'Light',
     dark: 'Dark',

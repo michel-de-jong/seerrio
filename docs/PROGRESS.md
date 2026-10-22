@@ -27,6 +27,8 @@ You fill in Decisions before Phase 0. The agent updates the rest at the end of e
 | Quota request failure | form stays usable | A restricted quota with too few remaining requests disables submit. A failed quota call does not |
 | `react-dom` | pinned to 19.2.3 | Overridden to match React 19.2.3 on SDK 57, so no transitive package pulls in a newer react-dom |
 
+* Appearance defaults to Dark to match Seerr’s web interface; System and Light remain available in Profile (2026-10-22).
+
 ## Server facts (from npm run smoke)
 
 Smoke has not been run against a live server in this session. `.env.local` was not opened.
@@ -111,6 +113,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 ## Log
 
+* 2026-10-22 · Dark mode background fix · Screens stayed white because React Navigation used its default light theme and tab scenes had no background. The navigator now gets a theme built from the app tokens, tab scenes and the native root view use the theme background, and an explicit Light/Dark choice also switches native controls. Dark is now the default, matching Seerr’s web interface. The light background is tinted so cards stand out. Verify: open Discover, Search, Requests and Profile in Dark, Light and System and check that no screen flashes or stays white. Typecheck, lint, tests and release check pass.
 * 2026-10-22 · Appearance and request polish · Show the connected server on sign-in. Restyle light and dark themes around Seerr’s indigo and gray palette, with a Profile choice for System, Light, or Dark. Season requests now use selectable cards. Removed Tautulli-backed watch history. Typecheck, lint, and tests pass.
 * 2026-10-22 · Sign-in regression · Password sign-in now preserves the anonymous CSRF cookies obtained before authentication while still discarding every prior session or API-key credential. Failed attempts retain only refreshed CSRF cookies, so retrying does not depend on an extra rejected request and CSRF refresh round trip. Verify in Expo Go with Seerr CSRF protection enabled.
 * 2026-10-22 · Release audit · Added an OpenAPI parity and store-readiness checklist plus an automated tracked-secret/logging, HTTP-boundary, route-exposure, authenticated-image-cache, accessibility, dark-mode, and offline-state guard. The Seerr 3.5 audit counted 217 operations across 168 paths: 80 are called by mobile and every remaining operation is now classified as excluded, deferred, or deprecated. Shared media lists now show offline state and two interaction semantics were tightened. Typecheck, lint, 66 tests, Expo dependency checks, and Android/iOS/web bundle exports pass. Security review found no medium-or-higher issue in the reviewed changes. Expo Doctor is blocked only by local CocoaPods; signed EAS builds and physical iPhone/Android acceptance remain owner-gated.

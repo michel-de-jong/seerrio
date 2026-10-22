@@ -4,6 +4,8 @@ export const appearances = ['system', 'light', 'dark'] as const;
 
 export type Appearance = (typeof appearances)[number];
 
+export const defaultAppearance: Appearance = 'dark';
+
 export function isAppearance(value: string | null | undefined): value is Appearance {
   return value === 'system' || value === 'light' || value === 'dark';
 }
