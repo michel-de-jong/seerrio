@@ -1,4 +1,12 @@
-import { csrfToken, extractSessionCookie, mergeCookieHeader, parseSetCookie, withoutCsrfCookies } from './cookies';
+import {
+  csrfToken,
+  extractSessionCookie,
+  hasSessionCookie,
+  mergeCookieHeader,
+  parseSetCookie,
+  selectSeerrCookies,
+  withoutCsrfCookies,
+} from './cookies';
 
 const EXPIRES = 'Expires=Wed, 21 Oct 2026 07:28:00 GMT';
 
@@ -38,5 +46,13 @@ describe('csrf cookies', () => {
     ]);
     expect(merged).toBe('connect.sid=s%3Aold; _csrf=old; XSRF-TOKEN=new');
     expect(withoutCsrfCookies(merged)).toBe('connect.sid=s%3Aold');
+  });
+
+  it('removes deleted cookies and ignores unrelated response cookies', () => {
+    const updates = parseSetCookie('tracking=value; Path=/, connect.sid=; Max-Age=0; Path=/');
+    const selected = selectSeerrCookies('connect.sid=s%3Aold; _csrf=secret', updates);
+    const merged = mergeCookieHeader('connect.sid=s%3Aold; _csrf=secret', selected);
+    expect(merged).toBe('_csrf=secret');
+    expect(hasSessionCookie(merged)).toBe(false);
   });
 });

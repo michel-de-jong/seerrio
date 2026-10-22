@@ -1,7 +1,7 @@
 const CSRF_COOKIE_NAMES = new Set(['_csrf', 'XSRF-TOKEN']);
 const COOKIE_NAME = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+/;
 
-export type ParsedCookie = { name: string; pair: string };
+export type ParsedCookie = { name: string; pair: string; deleted?: boolean };
 
 /**
  * Pull cookies out of a Set-Cookie header.
@@ -12,7 +12,7 @@ export type ParsedCookie = { name: string; pair: string };
 export function parseSetCookie(header: string | null | undefined): ParsedCookie[] {
   if (!header) return [];
 
-  const pairs: ParsedCookie[] = [];
+  const starts: number[] = [];
   for (let index = 0; index < header.length; index += 1) {
     const atStart = index === 0;
     const afterSeparator = index >= 2 && header[index - 2] === ',' && header[index - 1] === ' ';
@@ -21,14 +21,19 @@ export function parseSetCookie(header: string | null | undefined): ParsedCookie[
     const slice = header.slice(index);
     const nameMatch = COOKIE_NAME.exec(slice);
     if (!nameMatch?.[0] || slice[nameMatch[0].length] !== '=') continue;
-
-    const name = nameMatch[0];
-    const valueStart = name.length + 1;
-    const semicolon = slice.indexOf(';', valueStart);
-    const value = slice.slice(valueStart, semicolon === -1 ? undefined : semicolon);
-    pairs.push({ name, pair: `${name}=${value}` });
+    starts.push(index);
   }
-  return pairs;
+
+  return starts.map((start, cookieIndex) => {
+    const segment = header.slice(start, starts[cookieIndex + 1] == null ? undefined : starts[cookieIndex + 1] - 2);
+    const nameMatch = COOKIE_NAME.exec(segment);
+    const name = nameMatch?.[0] ?? '';
+    const valueStart = name.length + 1;
+    const semicolon = segment.indexOf(';', valueStart);
+    const value = segment.slice(valueStart, semicolon === -1 ? undefined : semicolon);
+    const deleted = value.length === 0 || /(?:^|;)\s*max-age=0(?:;|$)/i.test(segment);
+    return { name, pair: `${name}=${value}`, deleted };
+  });
 }
 
 export function parseCookieHeader(header: string | null | undefined): ParsedCookie[] {
@@ -43,7 +48,10 @@ export function parseCookieHeader(header: string | null | undefined): ParsedCook
 export function mergeCookieHeader(existing: string | null | undefined, updates: ParsedCookie[]): string | null {
   const jar = new Map<string, string>();
   for (const cookie of parseCookieHeader(existing)) jar.set(cookie.name, cookie.pair);
-  for (const cookie of updates) jar.set(cookie.name, cookie.pair);
+  for (const cookie of updates) {
+    if (cookie.deleted) jar.delete(cookie.name);
+    else jar.set(cookie.name, cookie.pair);
+  }
   if (jar.size === 0) return null;
   return [...jar.values()].join('; ');
 }
@@ -61,7 +69,21 @@ export function csrfCookiesOnly(header: string | null | undefined): string | nul
 }
 
 export function hasSessionCookie(header: string | null | undefined): boolean {
-  return parseCookieHeader(header).some((cookie) => !CSRF_COOKIE_NAMES.has(cookie.name));
+  return parseCookieHeader(header).some(
+    (cookie) => !CSRF_COOKIE_NAMES.has(cookie.name) && cookie.pair.slice(cookie.name.length + 1).length > 0,
+  );
+}
+
+export function selectSeerrCookies(
+  existing: string | null | undefined,
+  updates: ParsedCookie[],
+): ParsedCookie[] {
+  const existingSession = parseCookieHeader(existing).find((cookie) => !CSRF_COOKIE_NAMES.has(cookie.name))?.name;
+  const responseSession =
+    updates.find((cookie) => cookie.name === 'connect.sid')?.name ??
+    [...updates].reverse().find((cookie) => !CSRF_COOKIE_NAMES.has(cookie.name))?.name;
+  const sessionName = existingSession ?? responseSession;
+  return updates.filter((cookie) => CSRF_COOKIE_NAMES.has(cookie.name) || cookie.name === sessionName);
 }
 
 export function csrfToken(header: string | null | undefined): string | null {

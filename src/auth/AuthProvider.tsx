@@ -15,14 +15,20 @@ export type Session =
   | { status: 'loading' }
   | { status: 'needsServer' }
   | { status: 'needsSignIn'; serverUrl: string; hasStoredAuth: boolean; message?: string }
-  | { status: 'signedIn'; serverUrl: string; user: SeerrUser; authKind: 'cookie' | 'apiKey' };
+  | {
+      status: 'signedIn';
+      serverUrl: string;
+      user: SeerrUser;
+      authKind: 'cookie' | 'apiKey';
+      staysSignedIn: boolean;
+    };
 
 type AuthContextValue = {
   session: Session;
   client: SeerrClient | null;
   saveServer: (url: string) => Promise<void>;
-  signInWithPassword: (email: string, password: string) => Promise<void>;
-  signInWithApiKey: (apiKey: string) => Promise<void>;
+  signInWithPassword: (email: string, password: string, staySignedIn: boolean) => Promise<void>;
+  signInWithApiKey: (apiKey: string, staySignedIn: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   forgetServer: () => Promise<void>;
   retrySession: () => Promise<void>;
@@ -36,92 +42,114 @@ type Props = {
   storage?: SessionStorage;
 };
 
+type PersistedAuthRecord = {
+  version: 1;
+  serverUrl: string;
+  auth: Exclude<ClientAuth, { kind: 'none' }>;
+  user: SeerrUser;
+};
+
 export function AuthProvider({ children, storage = secureSessionStorage }: Props) {
   const queryClient = useQueryClient();
   const authRef = useRef<ClientAuth>({ kind: 'none' });
+  const userRef = useRef<SeerrUser | null>(null);
+  const persistentRef = useRef(false);
   const serverRef = useRef<string | null>(null);
+  const generationRef = useRef(0);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   const [session, setSession] = useState<Session>({ status: 'loading' });
 
-  const clearSecrets = useCallback(async () => {
-    authRef.current = { kind: 'none' };
+  const clearPersistedAuth = useCallback(async () => {
+    await storage.remove(sessionKeys.authRecord);
+    // Remove values written by versions before the origin-bound record.
     await storage.remove(sessionKeys.cookie);
     await storage.remove(sessionKeys.apiKey);
     await storage.remove(sessionKeys.user);
   }, [storage]);
 
-  const getAuth = useCallback(() => authRef.current, []);
-  const readAuth = useCallback(async () => authRef.current, []);
+  const clearSecrets = useCallback(async () => {
+    authRef.current = { kind: 'none' };
+    userRef.current = null;
+    persistentRef.current = false;
+    await clearPersistedAuth();
+  }, [clearPersistedAuth]);
 
-  const onSetCookie = useCallback(
-    async (cookie: string) => {
+  const persistCurrentAuth = useCallback(
+    async (url: string) => {
+      if (!persistentRef.current || Platform.OS === 'web' || serverRef.current !== url) {
+        await storage.remove(sessionKeys.authRecord);
+        return;
+      }
+      const auth = authRef.current;
+      const user = userRef.current;
+      if (auth.kind === 'none' || !user) return;
+      const record: PersistedAuthRecord = { version: 1, serverUrl: url, auth, user };
+      await storage.set(sessionKeys.authRecord, JSON.stringify(record));
+    },
+    [storage],
+  );
+
+  const getAuth = useCallback(() => authRef.current, []);
+
+  const applyCookie = useCallback(
+    async (url: string, generation: number, cookie: string) => {
+      if (serverRef.current !== url || generationRef.current !== generation) return;
       if (!cookie) {
         if (authRef.current.kind === 'apiKey') {
           authRef.current = { kind: 'apiKey', apiKey: authRef.current.apiKey };
         } else {
           authRef.current = { kind: 'none' };
         }
-        await storage.remove(sessionKeys.cookie);
-        return;
-      }
-      if (authRef.current.kind === 'apiKey' && !hasSessionCookie(cookie)) {
+      } else if (authRef.current.kind === 'apiKey' && !hasSessionCookie(cookie)) {
         authRef.current = { kind: 'apiKey', apiKey: authRef.current.apiKey, cookie };
-        await storage.set(sessionKeys.cookie, cookie);
-        return;
-      }
-      if (hasSessionCookie(cookie)) {
+      } else if (hasSessionCookie(cookie)) {
         authRef.current = { kind: 'cookie', cookie };
-        await storage.set(sessionKeys.cookie, cookie);
-        await storage.remove(sessionKeys.apiKey);
-        return;
+      } else {
+        authRef.current = { kind: 'none', cookie };
       }
-      authRef.current = { kind: 'none', cookie };
-      await storage.set(sessionKeys.cookie, cookie);
+      await persistCurrentAuth(url);
     },
-    [storage],
+    [persistCurrentAuth],
   );
 
-  const onUnauthorized = useCallback(async () => {
-    await clearSecrets();
-    const current = serverRef.current;
-    if (current) setSession({ status: 'needsSignIn', serverUrl: current, hasStoredAuth: false });
-    queryClient.clear();
-  }, [clearSecrets, queryClient]);
-
   const clientFor = useCallback(
-    (url: string) =>
-      createSeerrClient({
+    (url: string) => {
+      const generation = generationRef.current;
+      return createSeerrClient({
         serverUrl: url,
-        getAuth: readAuth,
-        onSetCookie,
-        onUnauthorized,
-      }),
-    [onSetCookie, onUnauthorized, readAuth],
+        getAuth: async () =>
+          serverRef.current === url && generationRef.current === generation ? authRef.current : { kind: 'none' },
+        onSetCookie: (cookie) => applyCookie(url, generation, cookie),
+        onUnauthorized: async () => {
+          if (serverRef.current !== url || generationRef.current !== generation) return;
+          await clearSecrets();
+          setSession({ status: 'needsSignIn', serverUrl: url, hasStoredAuth: false });
+          queryClient.clear();
+        },
+      });
+    },
+    [applyCookie, clearSecrets, queryClient],
   );
 
   // The session cookie is read when a request starts. A ref lets sign-in store it and call getMe in the same turn.
   /* eslint-disable react-hooks/refs -- createSeerrClient stores these callbacks; it does not read the ref while rendering */
-  const client = useMemo(
-    () =>
-      serverUrl
-        ? createSeerrClient({
-            serverUrl,
-            getAuth: readAuth,
-            onSetCookie,
-            onUnauthorized,
-          })
-        : null,
-    [onSetCookie, onUnauthorized, readAuth, serverUrl],
-  );
+  const client = useMemo(() => (serverUrl ? clientFor(serverUrl) : null), [clientFor, serverUrl]);
   /* eslint-enable react-hooks/refs */
 
   const rememberUser = useCallback(
     async (user: SeerrUser, url: string) => {
-      await storage.set(sessionKeys.user, JSON.stringify(user));
+      userRef.current = user;
+      await persistCurrentAuth(url);
       const authKind = authRef.current.kind === 'apiKey' ? 'apiKey' : 'cookie';
-      setSession({ status: 'signedIn', serverUrl: url, user, authKind });
+      setSession({
+        status: 'signedIn',
+        serverUrl: url,
+        user,
+        authKind,
+        staysSignedIn: persistentRef.current,
+      });
     },
-    [storage],
+    [persistCurrentAuth],
   );
 
   useEffect(() => {
@@ -135,16 +163,19 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
       }
       serverRef.current = normalized;
       setServerUrl(normalized);
-      const apiKey = await storage.get(sessionKeys.apiKey);
-      const cookie = await storage.get(sessionKeys.cookie);
-      const cached = parseUser(safeJson(await storage.get(sessionKeys.user)));
-      if (apiKey) authRef.current = { kind: 'apiKey', apiKey, cookie: cookie ?? undefined };
-      else if (cookie && hasSessionCookie(cookie)) authRef.current = { kind: 'cookie', cookie };
-      else {
-        if (cookie) authRef.current = { kind: 'none', cookie };
+      const record = parsePersistedAuth(await storage.get(sessionKeys.authRecord), normalized);
+      await Promise.all([
+        storage.remove(sessionKeys.cookie),
+        storage.remove(sessionKeys.apiKey),
+        storage.remove(sessionKeys.user),
+      ]);
+      if (!record) {
         if (!cancelled) setSession({ status: 'needsSignIn', serverUrl: normalized, hasStoredAuth: false });
         return;
       }
+      authRef.current = record.auth;
+      userRef.current = record.user;
+      persistentRef.current = true;
       try {
         const user = await clientFor(normalized).getMe();
         if (cancelled) return;
@@ -156,12 +187,13 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
           setSession({ status: 'needsSignIn', serverUrl: normalized, hasStoredAuth: false });
           return;
         }
-        if (cached) {
+        if (record.user) {
           setSession({
             status: 'signedIn',
             serverUrl: normalized,
-            user: cached,
-            authKind: apiKey ? 'apiKey' : 'cookie',
+            user: record.user,
+            authKind: record.auth.kind,
+            staysSignedIn: true,
           });
           return;
         }
@@ -186,6 +218,7 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
         throw new SeerrError({ status: 0, path: '/', serverMessage: 'Invalid server URL.', kind: 'parse' });
       }
       await clearSecrets();
+      generationRef.current += 1;
       await storage.set(sessionKeys.serverUrl, normalized);
       serverRef.current = normalized;
       setServerUrl(normalized);
@@ -196,46 +229,52 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
   );
 
   const signInWithPassword = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string, staySignedIn: boolean) => {
       const url = serverRef.current;
       const trimmed = email.trim();
       if (!url || !trimmed) {
         throw new SeerrError({ status: 0, path: '/auth/local', serverMessage: '', kind: 'parse' });
       }
+      await clearPersistedAuth();
+      authRef.current = { kind: 'none' };
+      userRef.current = null;
+      persistentRef.current = staySignedIn && Platform.OS !== 'web';
       const next = clientFor(url);
-      await next.signIn(trimmed, password);
-      if (Platform.OS !== 'web' && authRef.current.kind !== 'cookie') {
-        throw new SeerrError({ status: 0, path: '/auth/me', serverMessage: '', kind: 'parse' });
+      try {
+        await next.signIn(trimmed, password);
+        if (Platform.OS !== 'web' && !hasSessionCookie(authRef.current.cookie)) {
+          throw new SeerrError({ status: 0, path: '/auth/me', serverMessage: '', kind: 'parse' });
+        }
+        const user = await readCurrentUser(next);
+        await rememberUser(user, url);
+        queryClient.clear();
+      } catch (error) {
+        await clearSecrets();
+        throw error;
       }
-      const user = await readCurrentUser(next);
-      await storage.remove(sessionKeys.apiKey);
-      await rememberUser(user, url);
-      queryClient.clear();
     },
-    [clientFor, queryClient, rememberUser, storage],
+    [clearPersistedAuth, clearSecrets, clientFor, queryClient, rememberUser],
   );
 
   const signInWithApiKey = useCallback(
-    async (apiKey: string) => {
+    async (apiKey: string, staySignedIn: boolean) => {
       const url = serverRef.current;
       const trimmed = apiKey.trim();
       if (!url || !trimmed) throw new SeerrError({ status: 0, path: '/auth/me', serverMessage: '', kind: 'parse' });
+      await clearPersistedAuth();
+      persistentRef.current = staySignedIn && Platform.OS !== 'web';
       const csrf = csrfCookiesOnly(authRef.current.cookie);
       authRef.current = { kind: 'apiKey', apiKey: trimmed, cookie: csrf ?? undefined };
-      await storage.set(sessionKeys.apiKey, trimmed);
-      if (csrf) await storage.set(sessionKeys.cookie, csrf);
-      else await storage.remove(sessionKeys.cookie);
       try {
         const user = await clientFor(url).getMe();
         await rememberUser(user, url);
         queryClient.clear();
       } catch (error) {
-        authRef.current = { kind: 'none' };
-        await storage.remove(sessionKeys.apiKey);
+        await clearSecrets();
         throw error;
       }
     },
-    [clientFor, queryClient, rememberUser, storage],
+    [clearPersistedAuth, clearSecrets, clientFor, queryClient, rememberUser],
   );
 
   const signOut = useCallback(async () => {
@@ -245,6 +284,7 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
     } catch {
       // Logging out is best effort. The local session is cleared either way.
     }
+    generationRef.current += 1;
     await clearSecrets();
     if (url) setSession({ status: 'needsSignIn', serverUrl: url, hasStoredAuth: false });
     queryClient.clear();
@@ -257,6 +297,7 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
     } catch {
       // Best effort, same as sign-out.
     }
+    generationRef.current += 1;
     await clearSecrets();
     await storage.remove(sessionKeys.serverUrl);
     serverRef.current = null;
@@ -324,4 +365,16 @@ function safeJson(value: string | null): unknown {
   } catch {
     return null;
   }
+}
+
+function parsePersistedAuth(value: string | null, serverUrl: string): PersistedAuthRecord | null {
+  const parsed = safeJson(value);
+  if (!parsed || typeof parsed !== 'object') return null;
+  const record = parsed as Partial<PersistedAuthRecord>;
+  if (record.version !== 1 || record.serverUrl !== serverUrl || !record.auth || !record.user) return null;
+  const user = parseUser(record.user);
+  if (!user || (record.auth.kind !== 'cookie' && record.auth.kind !== 'apiKey')) return null;
+  if (record.auth.kind === 'cookie' && !hasSessionCookie(record.auth.cookie)) return null;
+  if (record.auth.kind === 'apiKey' && !record.auth.apiKey) return null;
+  return { version: 1, serverUrl, auth: record.auth, user };
 }

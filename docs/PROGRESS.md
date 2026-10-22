@@ -6,7 +6,7 @@ You fill in Decisions before Phase 0. The agent updates the rest at the end of e
 
 | Topic | Choice | Notes |
 | --- | --- | --- |
-| App display name | Seerr Lite | Rename before any public release |
+| App display name | Seerr Mobile | Renamed when the product roadmap expanded beyond the Lite scope |
 | Bundle id and Android package | io.seerrlite.app | Permanent store identity selected on 2026-10-21 |
 | URLs the phone will use | not decided | LAN and remote addresses are still open |
 | ALLOW_HTTP in release builds | yes | iOS ATS and Android cleartext traffic are enabled for self-hosted LAN servers. HTTPS remains strongly preferred |
@@ -96,6 +96,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 ## Log
 
+* 2026-10-22 · Security foundation · Renamed the visible app to Seerr Mobile. Added opt-in native keychain persistence, memory-only default/browser sessions, origin-bound auth records, stale-response guards, HTTP risk confirmation, HTTPS-only API-key sign-in, restricted avatars, external-link confirmation, cookie deletion handling, and sanitized server messages.
 * 2026-10-22 · Sign-in · CSRF protection can stay on. The app stores `_csrf` and `XSRF-TOKEN`, sends `X-XSRF-TOKEN` on changes, and retries once after a CSRF rejection. Verify on the phone over HTTPS: connect, then sign in with a native Seerr account while Settings, Network, Enable CSRF Protection is on.
 
 * 2026-10-22 · Error handling · Connect now distinguishes unreachable phone routes, timeouts, non-Seerr responses, missing `/api/v1`, proxy blocks, and server errors. Sign-in reports Seerr's safe HTTP status/message and detects CSRF before classifying a credential rejection. Verify on a phone with an invalid host, a reachable non-Seerr URL, and a native-account sign-in.

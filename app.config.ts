@@ -1,9 +1,8 @@
 import type { ExpoConfig } from 'expo/config';
 
 const config: ExpoConfig = {
-  name: 'Seerr Lite',
-  slug: 'seerr-lite',
-  scheme: 'seerrlite',
+  name: 'Seerr Mobile',
+  slug: 'seerr-mobile',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './assets/icon.png',

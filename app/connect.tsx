@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { createSeerrClient } from '@/api';
@@ -47,6 +47,7 @@ export default function ConnectScreen() {
         setError(en.connect.localLoginOff);
         return;
       }
+      if (normalized.startsWith('http://') && !(await confirmHttp())) return;
       await saveServer(normalized);
     } catch (caught) {
       setError(presentError(caught, 'connect'));
@@ -96,4 +97,13 @@ export default function ConnectScreen() {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function confirmHttp(): Promise<boolean> {
+  return new Promise((resolve) => {
+    Alert.alert(en.connect.httpTitle, en.connect.httpWarning, [
+      { text: en.actions.cancel, style: 'cancel', onPress: () => resolve(false) },
+      { text: en.connect.useHttp, style: 'destructive', onPress: () => resolve(true) },
+    ], { cancelable: true, onDismiss: () => resolve(false) });
+  });
 }

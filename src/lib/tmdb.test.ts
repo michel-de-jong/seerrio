@@ -8,8 +8,7 @@ describe('images', () => {
       kind: 'cookie',
       cookie: 'connect.sid=s%3Asecret',
     });
-    expect(source).toEqual({ uri: 'https://image.tmdb.org/t/p/w185/abc.jpg' });
-    expect(source && 'headers' in source).toBe(false);
+    expect(source).toBeNull();
   });
 
   it('attaches auth only for a relative avatar on the Seerr host', () => {

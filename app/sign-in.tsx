@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { SeerrError } from '@/api/errors';
 import { useSession } from '@/auth/AuthProvider';
@@ -20,16 +20,18 @@ export default function SignInScreen() {
   const [password, setPassword] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [advanced, setAdvanced] = useState(false);
+  const [staySignedIn, setStaySignedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const storedMessage = session.status === 'needsSignIn' ? session.message : undefined;
   const hasStoredAuth = session.status === 'needsSignIn' && session.hasStoredAuth;
+  const secureServer = session.status === 'needsSignIn' && session.serverUrl.startsWith('https://');
 
   const submitPassword = async () => {
     setLoading(true);
     setError(null);
     try {
-      await signInWithPassword(email, password);
+      await signInWithPassword(email, password, staySignedIn);
     } catch (caught) {
       if (caught instanceof SeerrError && caught.status >= 500 && settings.data?.localLogin === false) {
         setError(en.connect.localLoginOff);
@@ -42,10 +44,14 @@ export default function SignInScreen() {
   };
 
   const submitKey = async () => {
+    if (!secureServer) {
+      setError(en.signIn.apiKeyRequiresHttps);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      await signInWithApiKey(apiKey);
+      await signInWithApiKey(apiKey, staySignedIn);
     } catch (caught) {
       setError(presentError(caught, 'signIn'));
     } finally {
@@ -94,6 +100,31 @@ export default function SignInScreen() {
           autoComplete="password"
           textContentType="password"
         />
+        {Platform.OS === 'web' ? (
+          <Text style={{ color: theme.colors.muted }}>{en.signIn.webSession}</Text>
+        ) : (
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: staySignedIn }}
+            onPress={() => setStaySignedIn((value) => !value)}
+            style={{ minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: theme.space.sm }}
+          >
+            <View
+              style={{
+                width: 22,
+                height: 22,
+                borderWidth: 2,
+                borderColor: staySignedIn ? theme.colors.accent : theme.colors.muted,
+                backgroundColor: staySignedIn ? theme.colors.accent : 'transparent',
+                borderRadius: theme.radius.sm,
+              }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '600' }}>{en.signIn.staySignedIn}</Text>
+              <Text style={{ color: theme.colors.muted, lineHeight: 19 }}>{en.signIn.staySignedInHint}</Text>
+            </View>
+          </Pressable>
+        )}
         {error ? (
           <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>
             {error}
@@ -141,7 +172,7 @@ export default function SignInScreen() {
               label={en.actions.continue}
               variant="secondary"
               loading={loading}
-              disabled={apiKey.trim().length === 0}
+              disabled={apiKey.trim().length === 0 || !secureServer}
               onPress={() => {
                 void submitKey();
               }}

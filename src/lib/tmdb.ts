@@ -31,7 +31,7 @@ export function seerrImageSource(
 ): { uri: string; headers?: Record<string, string> } | null {
   if (!path) return null;
   const uri = /^https?:\/\//i.test(path) ? path : resolveAgainstServer(serverUrl, path);
-  if (!sameServerOrigin(serverUrl, uri)) return { uri };
+  if (!sameServerOrigin(serverUrl, uri)) return null;
   const headers = authHeaders(auth);
   return headers ? { uri, headers } : { uri };
 }
@@ -39,4 +39,8 @@ export function seerrImageSource(
 export function safeHttpUrl(value: string | null | undefined): string | null {
   if (!value || !/^https?:\/\//i.test(value)) return null;
   return value;
+}
+
+export function httpHost(value: string): string {
+  return /^https?:\/\/([^/?#]+)/i.exec(value)?.[1] ?? value;
 }

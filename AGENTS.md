@@ -1,10 +1,10 @@
-# Seerr Lite: agent instructions
+# Seerr Mobile: agent instructions
 
 Standing instructions for Cursor's agent (and any AGENTS.md-aware tool). Keep this file short; details live in `docs/`.
 
 ## Mission
 
-Seerr Lite is a lightweight, unofficial iOS and Android client for a self-hosted Seerr server (v3.x). Household members sign in with their Seerr account (a native Seerr account: an email and password stored in Seerr itself), discover and search titles, request movies or specific seasons, and follow their requests. Admins approve or decline. One codebase: Expo, React Native and TypeScript.
+Seerr Mobile is an unofficial iOS and Android client for a self-hosted Seerr server (v3.x). Household members sign in with their Seerr account (a native Seerr account: an email and password stored in Seerr itself), discover and search titles, request movies or specific seasons, and follow their requests. Admins approve or decline. One codebase: Expo, React Native and TypeScript.
 
 ## Read first
 

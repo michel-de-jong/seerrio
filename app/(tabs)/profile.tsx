@@ -57,6 +57,7 @@ function ProfileBody(props: {
           <Image
             source={avatar}
             accessibilityLabel={en.profile.avatarLabel}
+            cachePolicy="memory"
             style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: theme.colors.skeleton }}
           />
         ) : (
