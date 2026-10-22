@@ -76,6 +76,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | @tanstack/react-query 5.104.5 | Server state. Stay on v5 | 0 |
 | expo-secure-store | Session cookie, optional API key, and cached user | 2 |
 | expo-image | Posters, backdrops, and avatars | 3 |
+| expo-splash-screen | Dark launch screen with the app icon, so native builds don't flash white (included in Expo Go) | Release |
 | expo-network | Offline banner and TanStack Query's online manager. The app does not call `getIpAddressAsync` (that path uses a third party on web) | 2 |
 | @expo/vector-icons | Tab icons | 3 |
 | expo-build-properties | Enable Android cleartext traffic for user-supplied HTTP Seerr servers in generated native builds | 7 |
@@ -113,6 +114,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 ## Log
 
+* 2026-10-22 · App icon and splash · Replaced the Expo template icon with an original icon in Seerr's indigo and violet: a gradient ring around a play symbol with a "request" plus badge. It deliberately doesn't copy Seerr's logo. `scripts/generate-icons.py` (Pillow) renders the iOS icon, Android adaptive foreground, background and monochrome layers, the favicon and the splash image. Added a dark splash screen. The icon only shows in native builds; Expo Go keeps its own icon. Verify in a preview build: home-screen icon, Android themed icons, and launch screen.
 * 2026-10-22 · Dark mode background fix · Screens stayed white because React Navigation used its default light theme and tab scenes had no background. The navigator now gets a theme built from the app tokens, tab scenes and the native root view use the theme background, and an explicit Light/Dark choice also switches native controls. Dark is now the default, matching Seerr’s web interface. The light background is tinted so cards stand out. Verify: open Discover, Search, Requests and Profile in Dark, Light and System and check that no screen flashes or stays white. Typecheck, lint, tests and release check pass.
 * 2026-10-22 · Appearance and request polish · Show the connected server on sign-in. Restyle light and dark themes around Seerr’s indigo and gray palette, with a Profile choice for System, Light, or Dark. Season requests now use selectable cards. Removed Tautulli-backed watch history. Typecheck, lint, and tests pass.
 * 2026-10-22 · Sign-in regression · Password sign-in now preserves the anonymous CSRF cookies obtained before authentication while still discarding every prior session or API-key credential. Failed attempts retain only refreshed CSRF cookies, so retrying does not depend on an extra rejected request and CSRF refresh round trip. Verify in Expo Go with Seerr CSRF protection enabled.

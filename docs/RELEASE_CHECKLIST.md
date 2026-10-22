@@ -117,7 +117,7 @@ Accepted configuration warning: iOS ATS and Android cleartext traffic are enable
 
 Do not submit until all items below are complete:
 
-- Replace the Expo template icon assets with final licensed artwork.
+- Confirm the original app icon (`scripts/generate-icons.py`) is acceptable; it must not reuse Seerr's logo.
 - Link the project with `npx eas-cli init`; no EAS project ID or account credential belongs in git.
 - Create signed internal builds with `npx eas-cli build --platform all --profile preview`.
 - Install the preview build on a physical iPhone and Android phone.

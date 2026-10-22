@@ -20,7 +20,7 @@ const config: ExpoConfig = {
     package: 'io.seerrlite.app',
     predictiveBackGestureEnabled: false,
     adaptiveIcon: {
-      backgroundColor: '#E6F4FE',
+      backgroundColor: '#1E1B4B',
       foregroundImage: './assets/android-icon-foreground.png',
       backgroundImage: './assets/android-icon-background.png',
       monochromeImage: './assets/android-icon-monochrome.png',
@@ -34,6 +34,15 @@ const config: ExpoConfig = {
     'expo-secure-store',
     'expo-image',
     'expo-font',
+    [
+      'expo-splash-screen',
+      {
+        image: './assets/splash-icon.png',
+        imageWidth: 200,
+        resizeMode: 'contain',
+        backgroundColor: '#111827',
+      },
+    ],
     [
       'expo-build-properties',
       {
