@@ -66,6 +66,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | @expo/vector-icons | Tab icons | 3 |
 | expo-build-properties | Enable Android cleartext traffic for user-supplied HTTP Seerr servers in generated native builds | 7 |
 | expo-font, react-native-worklets | Required native peers for vector icons and Reanimated. Expo Go had supplied these implicitly; standalone builds require direct dependencies | 7 |
+| react-native-web, react-dom 19.3.0 | Expo's browser preview. `react-dom` stays on the existing override so it matches React 19.3.0 | 0 |
 | typescript, eslint, eslint-config-expo, @types/react | Typecheck and lint | 0 |
 | jest, jest-expo, @types/jest, @types/node | Unit tests and the Node smoke script | 1 |
 | tsx | Run `scripts/smoke.ts` | 1 |
@@ -96,3 +97,4 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 * 2026-10-21 · Phases 0–6 · Scaffolded the Expo app, Seerr client, session, and the screens in `docs/SPEC.md`. `PLANNING.md` was not in the repo, so behavior is recorded in `docs/SPEC.md`. Verify with `npm run typecheck`, `npm run lint`, and `npm test`. Then, on iPhone and Android in Expo Go: connect, sign in, discover, search, open a title, request it, review the requests list, and open profile. See the hand-off notes for the exact pass.
 * 2026-10-21 · Phase 7 · Selected `io.seerrlite.app`, added EAS preview/production profiles, and enabled HTTP in generated iOS and Android apps. Verify the resolved Expo config, link the EAS project, then install preview builds on both phones.
+* 2026-10-22 · Web preview · Added `react-native-web` and `react-dom` so the localhost page Expo opens in a browser can bundle. Restart `npx expo start` and reload the page. The phone app is still Expo Go or a native build.
