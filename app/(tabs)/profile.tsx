@@ -9,7 +9,7 @@ import { useQuota } from '@/features/requests/hooks';
 import { usePublicSettings, useServerStatus } from '@/features/server/hooks';
 import { en } from '@/i18n/en';
 import { formatQuota } from '@/lib/format';
-import { canManageUsers } from '@/lib/permissions';
+import { canManageSettings, canManageUsers, canViewBlocklist } from '@/lib/permissions';
 import { seerrImageSource } from '@/lib/tmdb';
 import { useTheme } from '@/theme/useTheme';
 
@@ -112,6 +112,9 @@ function ProfileBody(props: {
       <Button label={en.profile.watchHistory} variant="secondary" onPress={() => router.push('/profile/watch-data')} />
       {canManageUsers(props.permissions) ? (
         <Button label={en.profile.userAdministration} variant="secondary" onPress={() => router.push('/admin/users')} />
+      ) : null}
+      {canManageSettings(props.permissions) || canViewBlocklist(props.permissions) ? (
+        <Button label={en.profile.serverAdministration} variant="secondary" onPress={() => router.push('/admin')} />
       ) : null}
       <Button
         label={en.actions.signOut}

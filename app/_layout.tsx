@@ -129,6 +129,16 @@ function RootNavigator() {
         <Stack.Screen name="admin/users/create" options={{ title: en.userAdmin.create }} />
         <Stack.Screen name="admin/users/[id]" options={{ title: en.userAdmin.detail }} />
         <Stack.Screen name="admin/users/batch" options={{ title: en.userAdmin.batchTitle }} />
+        <Stack.Screen name="admin/index" options={{ title: en.profile.serverAdministration }} />
+        <Stack.Screen name="admin/main" options={{ title: en.serverAdmin.main }} />
+        <Stack.Screen name="admin/network" options={{ title: en.serverAdmin.network }} />
+        <Stack.Screen name="admin/blocklist" options={{ title: en.serverAdmin.blocklist }} />
+        <Stack.Screen name="admin/sliders" options={{ title: en.serverAdmin.sliders }} />
+        <Stack.Screen name="admin/override-rules" options={{ title: en.serverAdmin.overrideRules }} />
+        <Stack.Screen name="admin/override-rule" options={{ title: en.serverAdmin.editRule }} />
+        <Stack.Screen name="admin/services" options={{ title: en.serverAdmin.services }} />
+        <Stack.Screen name="admin/jobs" options={{ title: en.serverAdmin.jobs }} />
+        <Stack.Screen name="admin/caches" options={{ title: en.serverAdmin.caches }} />
       </Stack>
     </>
   );

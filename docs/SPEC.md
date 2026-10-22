@@ -120,6 +120,16 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 * Batch permission updates exclude the primary owner and current manager, replace the complete permission mask, show a warning, and require confirmation.
 * Plex/Jellyfin/Emby imports and linked-account administration remain out of scope.
 
+## Server administration
+
+* MANAGE_SETTINGS or ADMIN can edit a safe subset of main settings and network settings. API keys, proxy hosts/passwords, bypass rules, and integration credentials are never parsed into app state.
+* Turning off native sign-in or CSRF protection requires an explicit warning. CSRF protection should remain enabled. Trust-proxy state is read-only.
+* VIEW_BLOCKLIST can inspect/search the blocklist; MANAGE_BLOCKLIST can add a title from details and remove a block with confirmation.
+* ADMIN can enable, disable, and reorder discover sliders. ADMIN can list, create, edit, and delete override rules with confirmations for deletion.
+* MANAGE_SETTINGS can view redacted Radarr/Sonarr summaries, run or cancel scheduled jobs with confirmation, view aggregate cache stats, and flush named API caches with confirmation.
+* Service hosts, API keys, proxy secrets, DNS entry hostnames/addresses, and notification credentials are never displayed. Queries that transiently receive sensitive server responses use immediate garbage collection.
+* Initial setup, API-key regeneration, logs, integration configuration/secrets, library scans, media-file deletion, job schedule editing, and DNS-entry flushing stay in Seerr’s web interface.
+
 ## Every screen
 
 Loading, empty, error with retry, and offline. Labels for controls. Light and dark mode from the system theme. Status colors come from `src/lib/status.ts`. Permission checks come from `src/lib/permissions.ts`. Copy comes from `src/i18n/en.ts`.

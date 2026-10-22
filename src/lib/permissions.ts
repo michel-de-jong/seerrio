@@ -1,5 +1,6 @@
 export const Permission = {
   ADMIN: 2,
+  MANAGE_SETTINGS: 4,
   MANAGE_USERS: 8,
   MANAGE_REQUESTS: 16,
   REQUEST: 32,
@@ -31,6 +32,7 @@ export const Permission = {
 
 export const configurablePermissions = [
   { bit: Permission.ADMIN, key: 'admin' },
+  { bit: Permission.MANAGE_SETTINGS, key: 'manageSettings' },
   { bit: Permission.MANAGE_USERS, key: 'manageUsers' },
   { bit: Permission.MANAGE_REQUESTS, key: 'manageRequests' },
   { bit: Permission.REQUEST, key: 'request' },
@@ -74,6 +76,14 @@ export function hasPermission(permissions: number, ...bits: readonly number[]): 
 export const canManageRequests = (permissions: number): boolean => hasPermission(permissions, Permission.MANAGE_REQUESTS);
 
 export const canManageUsers = (permissions: number): boolean => hasPermission(permissions, Permission.MANAGE_USERS);
+
+export const canManageSettings = (permissions: number): boolean => hasPermission(permissions, Permission.MANAGE_SETTINGS);
+
+export const canViewBlocklist = (permissions: number): boolean =>
+  hasPermission(permissions, Permission.MANAGE_BLOCKLIST, Permission.VIEW_BLOCKLIST);
+
+export const canManageBlocklist = (permissions: number): boolean =>
+  hasPermission(permissions, Permission.MANAGE_BLOCKLIST);
 
 export const canViewAllRequests = (permissions: number): boolean =>
   hasPermission(permissions, Permission.MANAGE_REQUESTS, Permission.REQUEST_VIEW);

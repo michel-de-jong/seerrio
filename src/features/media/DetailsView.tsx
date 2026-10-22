@@ -12,10 +12,12 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useMediaDetails, useRelatedMedia } from '@/features/media/hooks';
+import { useAddBlocklistItem } from '@/features/admin/hooks';
 import { usePublicSettings } from '@/features/server/hooks';
 import { en } from '@/i18n/en';
 import { mediaYear } from '@/lib/format';
-import { canCreateIssues, canRequest4kMovie, canRequest4kTv, canRequestMovie, canRequestTv } from '@/lib/permissions';
+import { presentError } from '@/lib/presentError';
+import { canCreateIssues, canManageBlocklist, canRequest4kMovie, canRequest4kTv, canRequestMovie, canRequestTv } from '@/lib/permissions';
 import { isQualityRequestable } from '@/lib/requestability';
 import { mediaDisplayStatus } from '@/lib/status';
 import { httpHost, posterUrl, safeHttpUrl } from '@/lib/tmdb';
@@ -31,6 +33,7 @@ export function DetailsView({ mediaType, id }: Props) {
   const query = useMediaDetails(mediaType, id);
   const recommendations = useRelatedMedia(mediaType, id, 'recommendations');
   const similar = useRelatedMedia(mediaType, id, 'similar');
+  const addBlocklist = useAddBlocklistItem();
   const settings = usePublicSettings();
   const { session } = useSession();
   const permissions = session.status === 'signedIn' ? session.user.permissions : 0;
@@ -131,6 +134,30 @@ export function DetailsView({ mediaType, id }: Props) {
               })
             }
           />
+        ) : null}
+        {!blocklisted && canManageBlocklist(permissions) && session.status === 'signedIn' ? (
+          <Button
+            label={en.serverAdmin.blockTitle}
+            variant="danger"
+            loading={addBlocklist.isPending}
+            onPress={() =>
+              Alert.alert(en.serverAdmin.blockTitle, en.serverAdmin.blockBody(title), [
+                { text: en.actions.cancel, style: 'cancel' },
+                {
+                  text: en.serverAdmin.blockTitle,
+                  style: 'destructive',
+                  onPress: () =>
+                    addBlocklist.mutate(
+                      { tmdbId: id, mediaType, title, user: session.user.id },
+                      { onSuccess: () => void query.refetch() },
+                    ),
+                },
+              ])
+            }
+          />
+        ) : null}
+        {addBlocklist.error ? (
+          <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(addBlocklist.error)}</Text>
         ) : null}
         {mediaType === 'movie' && movieOf(query.data).collection ? (
           <Button

@@ -1,7 +1,12 @@
 import type {
+  AdminMainSettings,
+  AdminNetworkSettings,
+  BlocklistPage,
+  CacheSummary,
   CollectionDetails,
   CollectionSummary,
   CreatedRequest,
+  DiscoverSlider,
   EpisodeDetails,
   Issue,
   IssueComment,
@@ -15,6 +20,7 @@ import type {
   MovieDetails,
   NamedEntity,
   NotificationSettings,
+  OverrideRule,
   PersonCredit,
   PersonDetails,
   PublicSettings,
@@ -26,7 +32,9 @@ import type {
   ResultsPage,
   SeerrUser,
   SeasonDetails,
+  ServerJob,
   ServerStatus,
+  ServiceSummary,
   TvDetails,
   TvSeason,
   UserMainSettings,
@@ -710,5 +718,196 @@ export function parseCreatedRequest(value: unknown): CreatedRequest {
   return {
     ...(id === undefined ? {} : { id }),
     ...(message === undefined ? {} : { message }),
+  };
+}
+
+export function parseAdminMainSettings(value: unknown): AdminMainSettings | null {
+  if (!isRecord(value)) return null;
+  const result: AdminMainSettings = {};
+  const stringKeys = ['appLanguage', 'applicationTitle', 'applicationUrl'] as const;
+  const booleanKeys = [
+    'hideAvailable',
+    'hideRequested',
+    'partialRequestsEnabled',
+    'localLogin',
+    'enableSpecialEpisodes',
+    'versionCheck',
+  ] as const;
+  for (const key of stringKeys) {
+    const field = stringField(value, key);
+    if (field !== undefined) result[key] = field;
+  }
+  for (const key of booleanKeys) {
+    if (typeof value[key] === 'boolean') result[key] = value[key];
+  }
+  const defaultPermissions = numberField(value, 'defaultPermissions');
+  if (defaultPermissions !== undefined) result.defaultPermissions = defaultPermissions;
+  return result;
+}
+
+export function parseAdminNetworkSettings(value: unknown): AdminNetworkSettings | null {
+  if (!isRecord(value)) return null;
+  const dns = isRecord(value.dnsCache) ? value.dnsCache : {};
+  const dnsForceMinTtl = numberField(dns, 'forceMinTtl');
+  const dnsForceMaxTtl = numberField(dns, 'forceMaxTtl');
+  return {
+    csrfProtection: value.csrfProtection === true,
+    forceIpv4First: value.forceIpv4First === true,
+    trustProxy: value.trustProxy === true,
+    dnsCacheEnabled: dns.enabled === true,
+    ...(dnsForceMinTtl === undefined ? {} : { dnsForceMinTtl }),
+    ...(dnsForceMaxTtl === undefined ? {} : { dnsForceMaxTtl }),
+  };
+}
+
+export function parseBlocklistPage(value: unknown): BlocklistPage | null {
+  if (!isRecord(value) || !Array.isArray(value.results)) return null;
+  const pageInfo = isRecord(value.pageInfo) ? value.pageInfo : {};
+  return {
+    page: numberField(pageInfo, 'page') ?? 1,
+    pages: numberField(pageInfo, 'pages') ?? 1,
+    results: value.results.flatMap((item) => {
+      if (!isRecord(item)) return [];
+      const id = numberField(item, 'id');
+      const tmdbId = numberField(item, 'tmdbId');
+      const mediaType = mediaTypeOf(item.mediaType);
+      const title = stringField(item, 'title');
+      if (id === undefined || tmdbId === undefined || !mediaType || title === undefined) return [];
+      const createdAt = stringField(item, 'createdAt');
+      return [{ id, tmdbId, mediaType, title, ...(createdAt === undefined ? {} : { createdAt }) }];
+    }),
+  };
+}
+
+function parseDiscoverSlider(value: unknown): DiscoverSlider | null {
+  if (!isRecord(value)) return null;
+  const id = numberField(value, 'id');
+  const type = numberField(value, 'type');
+  if (id === undefined || type === undefined) return null;
+  const title = stringField(value, 'title');
+  const data = stringField(value, 'data');
+  return {
+    id,
+    type,
+    ...(title === undefined ? {} : { title }),
+    isBuiltIn: value.isBuiltIn === true,
+    enabled: value.enabled === true,
+    ...(data === undefined ? {} : { data }),
+  };
+}
+
+export function parseDiscoverSliders(value: unknown): DiscoverSlider[] | null {
+  if (!Array.isArray(value)) return null;
+  return value.flatMap((item) => {
+    const parsed = parseDiscoverSlider(item);
+    return parsed ? [parsed] : [];
+  });
+}
+
+function parseOverrideRule(value: unknown): OverrideRule | null {
+  if (!isRecord(value)) return null;
+  const id = numberField(value, 'id');
+  if (id === undefined) return null;
+  const rule: OverrideRule = { id };
+  const stringKeys = ['users', 'genre', 'language', 'keywords', 'rootFolder', 'tags'] as const;
+  const numberKeys = ['profileId', 'radarrServiceId', 'sonarrServiceId'] as const;
+  for (const key of stringKeys) {
+    const field = stringField(value, key);
+    if (field !== undefined) rule[key] = field;
+  }
+  for (const key of numberKeys) {
+    const field = numberField(value, key);
+    if (field !== undefined) rule[key] = field;
+  }
+  return rule;
+}
+
+export function parseOverrideRules(value: unknown): OverrideRule[] | null {
+  if (!Array.isArray(value)) return null;
+  return value.flatMap((item) => {
+    const parsed = parseOverrideRule(item);
+    return parsed ? [parsed] : [];
+  });
+}
+
+export function parseServices(value: unknown, kind: 'radarr' | 'sonarr'): ServiceSummary[] | null {
+  if (!Array.isArray(value)) return null;
+  return value.flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const id = numberField(item, 'id');
+    const name = stringField(item, 'name');
+    if (id === undefined || name === undefined) return [];
+    return [{
+      id,
+      kind,
+      name,
+      is4k: item.is4k === true,
+      isDefault: item.isDefault === true,
+      syncEnabled: item.syncEnabled === true,
+      preventSearch: item.preventSearch === true,
+    }];
+  });
+}
+
+export function parseServerJobs(value: unknown): ServerJob[] | null {
+  if (!Array.isArray(value)) return null;
+  return value.flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const id = stringField(item, 'id');
+    const name = stringField(item, 'name');
+    if (!id || !name) return [];
+    const type = stringField(item, 'type');
+    const interval = stringField(item, 'interval');
+    const nextExecutionTime = stringField(item, 'nextExecutionTime');
+    return [{
+      id,
+      name,
+      ...(type === undefined ? {} : { type }),
+      ...(interval === undefined ? {} : { interval }),
+      ...(nextExecutionTime === undefined ? {} : { nextExecutionTime }),
+      running: item.running === true,
+    }];
+  });
+}
+
+function numberProperties(
+  value: Record<string, unknown>,
+  keys: readonly string[],
+): Record<string, number> {
+  return Object.fromEntries(
+    keys.flatMap((key) => {
+      const field = numberField(value, key);
+      return field === undefined ? [] : [[key, field]];
+    }),
+  );
+}
+
+export function parseCacheSummary(value: unknown): CacheSummary | null {
+  if (!isRecord(value)) return null;
+  const imageCache = isRecord(value.imageCache) ? value.imageCache : {};
+  const tmdb = isRecord(imageCache.tmdb) ? imageCache.tmdb : {};
+  const avatar = isRecord(imageCache.avatar) ? imageCache.avatar : {};
+  const dnsCache = isRecord(value.dnsCache) ? value.dnsCache : {};
+  const dnsStats = isRecord(dnsCache.stats) ? dnsCache.stats : undefined;
+  const apiCaches = Array.isArray(value.apiCaches)
+    ? value.apiCaches.flatMap((cache) => {
+        if (!isRecord(cache)) return [];
+        const id = stringField(cache, 'id');
+        const name = stringField(cache, 'name');
+        const stats = isRecord(cache.stats) ? cache.stats : {};
+        return !id || !name
+          ? []
+          : [{ id, name, ...numberProperties(stats, ['hits', 'misses', 'keys']) }];
+      })
+    : [];
+  return {
+    apiCaches,
+    imageCache: {
+      tmdbSize: numberField(tmdb, 'size') ?? 0,
+      tmdbCount: numberField(tmdb, 'imageCount') ?? 0,
+      avatarSize: numberField(avatar, 'size') ?? 0,
+      avatarCount: numberField(avatar, 'imageCount') ?? 0,
+    },
+    ...(dnsStats ? { dns: numberProperties(dnsStats, ['size', 'maxSize', 'hits', 'misses', 'failures', 'hitRate']) } : {}),
   };
 }

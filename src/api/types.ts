@@ -368,3 +368,104 @@ export type CreateUserBody = {
   username?: string;
   password: string;
 };
+
+export type AdminMainSettings = {
+  appLanguage?: string;
+  applicationTitle?: string;
+  applicationUrl?: string;
+  hideAvailable?: boolean;
+  hideRequested?: boolean;
+  partialRequestsEnabled?: boolean;
+  localLogin?: boolean;
+  defaultPermissions?: number;
+  enableSpecialEpisodes?: boolean;
+  versionCheck?: boolean;
+};
+
+export type AdminNetworkSettings = {
+  csrfProtection: boolean;
+  forceIpv4First: boolean;
+  trustProxy: boolean;
+  dnsCacheEnabled: boolean;
+  dnsForceMinTtl?: number;
+  dnsForceMaxTtl?: number;
+};
+
+export type BlocklistItem = {
+  id: number;
+  tmdbId: number;
+  mediaType: MediaType;
+  title: string;
+  createdAt?: string;
+};
+
+export type BlocklistPage = {
+  page: number;
+  pages: number;
+  results: BlocklistItem[];
+};
+
+export type DiscoverSlider = {
+  id: number;
+  type: number;
+  title?: string;
+  isBuiltIn: boolean;
+  enabled: boolean;
+  data?: string;
+};
+
+export type OverrideRule = {
+  id: number;
+  users?: string;
+  genre?: string;
+  language?: string;
+  keywords?: string;
+  profileId?: number;
+  rootFolder?: string;
+  tags?: string;
+  radarrServiceId?: number;
+  sonarrServiceId?: number;
+};
+
+export type ServiceSummary = {
+  id: number;
+  kind: 'radarr' | 'sonarr';
+  name: string;
+  is4k: boolean;
+  isDefault: boolean;
+  syncEnabled: boolean;
+  preventSearch: boolean;
+};
+
+export type ServerJob = {
+  id: string;
+  name: string;
+  type?: string;
+  interval?: string;
+  nextExecutionTime?: string;
+  running: boolean;
+};
+
+export type CacheSummary = {
+  apiCaches: {
+    id: string;
+    name: string;
+    hits?: number;
+    misses?: number;
+    keys?: number;
+  }[];
+  imageCache: {
+    tmdbSize: number;
+    tmdbCount: number;
+    avatarSize: number;
+    avatarCount: number;
+  };
+  dns?: {
+    size?: number;
+    maxSize?: number;
+    hits?: number;
+    misses?: number;
+    failures?: number;
+    hitRate?: number;
+  };
+};

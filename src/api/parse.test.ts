@@ -1,9 +1,13 @@
 import {
   parseCollection,
+  parseAdminMainSettings,
+  parseAdminNetworkSettings,
+  parseCacheSummary,
   parseIssue,
   parseNotificationSettings,
   parsePerson,
   parseSeason,
+  parseServices,
   parseUserMainSettings,
   parseUserList,
   parseWatchData,
@@ -129,6 +133,66 @@ describe('rich media parsers', () => {
       page: 1,
       pages: 2,
       results: [{ id: 1, email: 'user@example.test', permissions: 2 }],
+    });
+  });
+
+  it('redacts server and proxy secrets from admin settings', () => {
+    expect(
+      parseAdminMainSettings({
+        applicationTitle: 'Example Seerr',
+        localLogin: true,
+        apiKey: 'must-not-survive',
+      }),
+    ).toEqual({ applicationTitle: 'Example Seerr', localLogin: true });
+    expect(
+      parseAdminNetworkSettings({
+        csrfProtection: true,
+        trustProxy: true,
+        proxy: { hostname: 'private.example.test', password: 'must-not-survive' },
+        dnsCache: { enabled: true, forceMinTtl: 10 },
+      }),
+    ).toEqual({
+      csrfProtection: true,
+      forceIpv4First: false,
+      trustProxy: true,
+      dnsCacheEnabled: true,
+      dnsForceMinTtl: 10,
+    });
+  });
+
+  it('keeps integration secrets out of service summaries', () => {
+    expect(
+      parseServices(
+        [{ id: 1, name: 'Movies', apiKey: 'must-not-survive', hostname: 'private.example.test', isDefault: true }],
+        'radarr',
+      ),
+    ).toEqual([
+      {
+        id: 1,
+        kind: 'radarr',
+        name: 'Movies',
+        is4k: false,
+        isDefault: true,
+        syncEnabled: false,
+        preventSearch: false,
+      },
+    ]);
+  });
+
+  it('exposes cache aggregates but not DNS host entries', () => {
+    expect(
+      parseCacheSummary({
+        apiCaches: [{ id: 'tmdb', name: 'TMDB', stats: { hits: 2, misses: 1, keys: 3 } }],
+        imageCache: { tmdb: { size: 10, imageCount: 1 }, avatar: { size: 20, imageCount: 2 } },
+        dnsCache: {
+          stats: { size: 1, hits: 2 },
+          entries: [{ hostname: 'private.example.test', activeAddress: '192.0.2.1' }],
+        },
+      }),
+    ).toEqual({
+      apiCaches: [{ id: 'tmdb', name: 'TMDB', hits: 2, misses: 1, keys: 3 }],
+      imageCache: { tmdbSize: 10, tmdbCount: 1, avatarSize: 20, avatarCount: 2 },
+      dns: { size: 1, hits: 2 },
     });
   });
 });

@@ -52,7 +52,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | 6 | Polish and QA | code complete on the logic; screens not exercised on a device | not checked | not checked |
 | 7 | Release builds | EAS configuration complete; account linking, signing, builds, and store submission pending | not checked | not checked |
 
-`npm run typecheck`, `npm run lint`, and `npm test` (62 tests) pass. `npm run smoke` was not run.
+`npm run typecheck`, `npm run lint`, and `npm test` (66 tests) pass. `npm run smoke` was not run.
 
 ### Mobile parity roadmap
 
@@ -63,7 +63,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | 3 | Request detail/edit/retry and issues | code complete |
 | 4 | Personal settings, preferences, password and watch data | code complete |
 | 5 | User administration | code complete |
-| 6 | Practical server administration | not started |
+| 6 | Practical server administration | code complete |
 | 7 | Parity/security audit and store readiness | not started |
 
 ## Dependencies added
@@ -108,6 +108,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 ## Log
 
+* 2026-10-22 · Server administration · Added permission-gated safe main/network settings, blocklist operations, discover slider ordering/toggles, override rules, redacted service summaries, confirmed job actions, and aggregate cache management. Parsers discard API keys, proxy credentials, service hosts, and DNS entries; excluded operations remain documented for the web interface. Typecheck, lint, and 66 tests pass.
 * 2026-10-22 · User administration · Added MANAGE_USERS-gated user search/list/detail/create/delete, account and quota overrides, replacement passwords, complete permission controls, and confirmed batch permission replacement. Owner/self protections are enforced in the UI and the server remains authoritative. External account imports remain excluded. Typecheck, lint, and 62 tests pass.
 * 2026-10-22 · Personal settings · Added current-user account and region/language preferences, per-channel notification event masks, password changes, quota detail, and read-only watch history. Notification credentials are memory-only with immediate query GC, passwords never persist, and all query data clears when the server/user scope changes. Typecheck, lint, and 60 tests pass.
 * 2026-10-22 · Requests and issues · Added request details, manager-only pending edits and failed retries, plus permission-gated issue list/count/detail/create/comment/status/edit/delete flows. PUT now receives the same CSRF protection and single refresh as other mutations. Typecheck, lint, and 56 tests pass. Device confirmations remain open.

@@ -118,6 +118,17 @@ This app uses Seerr's native accounts ("local users"): an email and a password s
 | `GET /user/{id}/settings/permissions` | Permission mask | MANAGE_USERS |
 | `POST /user/{id}/settings/permissions` | Replace permission mask | Server enforces delegation limits |
 | `PUT /user` | Replace permissions for a batch | `{ ids, permissions }`; confirmed in the app |
+| `GET/POST /settings/main` | Safe main settings | Parser drops `apiKey`; app sends only whitelisted fields |
+| `GET/POST /settings/network` | Safe network settings | Parser drops proxy host/password and bypass details |
+| `GET/POST /settings/discover` | List and batch-update slider order/enabled state | ADMIN |
+| `GET/POST /blocklist` | List/add blocklist entries | VIEW_BLOCKLIST or MANAGE_BLOCKLIST as appropriate |
+| `DELETE /blocklist/{tmdbId}` | Remove a blocklist entry | MANAGE_BLOCKLIST; requires `mediaType` |
+| `GET/POST/PUT/DELETE /overrideRule` | Override-rule administration | ADMIN |
+| `GET /service/radarr`, `GET /service/sonarr` | Redacted service summaries | App discards hosts and API keys |
+| `GET /settings/jobs` | Scheduled jobs | App does not expose schedule editing |
+| `POST /settings/jobs/{id}/{run\|cancel}` | Run or cancel a job | Confirmed; never retried |
+| `GET /settings/cache` | Aggregate cache stats | App discards DNS entries |
+| `POST /settings/cache/{id}/flush` | Flush a named API cache | Confirmed; never retried |
 
 Search and discover items have `mediaType` (`movie`, `tv`, `person`, sometimes others), `id` (TMDB id), `title` (movies) or `name` (series), `releaseDate` or `firstAirDate`, `posterPath`, `backdropPath`, `overview`, and an optional `mediaInfo` with `status` and `status4k`. Show only `movie` and `tv`.
 

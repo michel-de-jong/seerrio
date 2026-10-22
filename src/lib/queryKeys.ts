@@ -32,4 +32,13 @@ export const queryKeys = {
   usersAll: ['users'] as const,
   user: (userId: number) => ['user', userId] as const,
   userPermissions: (userId: number) => ['user', userId, 'permissions'] as const,
+  adminMain: ['admin', 'main'] as const,
+  adminNetwork: ['admin', 'network'] as const,
+  blocklist: (search: string) => ['blocklist', search] as const,
+  blocklistAll: ['blocklist'] as const,
+  discoverSliders: ['admin', 'discover-sliders'] as const,
+  overrideRules: ['admin', 'override-rules'] as const,
+  services: ['admin', 'services'] as const,
+  jobs: ['admin', 'jobs'] as const,
+  caches: ['admin', 'caches'] as const,
 };

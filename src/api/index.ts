@@ -1,4 +1,23 @@
 import { createRequest, type SeerrClientOptions } from './client';
+import {
+  addBlocklistItem,
+  changeServerJob,
+  deleteOverrideRule,
+  flushCache,
+  getAdminMainSettings,
+  getAdminNetworkSettings,
+  getCacheSummary,
+  getDiscoverSliders,
+  getOverrideRules,
+  getServerJobs,
+  getServices,
+  listBlocklist,
+  removeBlocklistItem,
+  saveOverrideRule,
+  updateAdminMainSettings,
+  updateAdminNetworkSettings,
+  updateDiscoverSliders,
+} from './endpoints/admin';
 import { getMe, logout, resetPassword, signIn } from './endpoints/auth';
 import { discover, discoverCategory, type DiscoverCategory } from './endpoints/discover';
 import {
@@ -44,13 +63,17 @@ import {
   listUsers,
 } from './endpoints/users';
 import type {
+  AdminMainSettings,
+  AdminNetworkSettings,
   CreateIssueBody,
   CreateRequestBody,
   CreateUserBody,
   DiscoverFeed,
+  DiscoverSlider,
   IssueFilter,
   ListRequestsQuery,
   NotificationSettings,
+  OverrideRule,
   UpdateRequestBody,
   UserMainSettings,
 } from './types';
@@ -128,6 +151,26 @@ export function createSeerrClient(options: SeerrClientOptions) {
       updateUserPermissions(request, userId, permissions),
     batchUpdateUserPermissions: (ids: number[], permissions: number) =>
       batchUpdateUserPermissions(request, ids, permissions),
+    getAdminMainSettings: (signal?: AbortSignal) => getAdminMainSettings(request, signal),
+    updateAdminMainSettings: (settings: AdminMainSettings) => updateAdminMainSettings(request, settings),
+    getAdminNetworkSettings: (signal?: AbortSignal) => getAdminNetworkSettings(request, signal),
+    updateAdminNetworkSettings: (settings: AdminNetworkSettings) => updateAdminNetworkSettings(request, settings),
+    listBlocklist: (take: number, skip: number, search: string, signal?: AbortSignal) =>
+      listBlocklist(request, take, skip, search, signal),
+    addBlocklistItem: (input: { tmdbId: number; mediaType: 'movie' | 'tv'; title: string; user: number }) =>
+      addBlocklistItem(request, input),
+    removeBlocklistItem: (tmdbId: number, mediaType: 'movie' | 'tv') =>
+      removeBlocklistItem(request, tmdbId, mediaType),
+    getDiscoverSliders: (signal?: AbortSignal) => getDiscoverSliders(request, signal),
+    updateDiscoverSliders: (sliders: DiscoverSlider[]) => updateDiscoverSliders(request, sliders),
+    getOverrideRules: (signal?: AbortSignal) => getOverrideRules(request, signal),
+    saveOverrideRule: (rule: OverrideRule | Omit<OverrideRule, 'id'>) => saveOverrideRule(request, rule),
+    deleteOverrideRule: (id: number) => deleteOverrideRule(request, id),
+    getServices: (signal?: AbortSignal) => getServices(request, signal),
+    getServerJobs: (signal?: AbortSignal) => getServerJobs(request, signal),
+    changeServerJob: (id: string, action: 'run' | 'cancel') => changeServerJob(request, id, action),
+    getCacheSummary: (signal?: AbortSignal) => getCacheSummary(request, signal),
+    flushCache: (id: string) => flushCache(request, id),
   };
 }
 
