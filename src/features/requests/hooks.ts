@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { CreateRequestBody, MediaType, RequestFilter } from '../../api/types';
+import type { CreateRequestBody, MediaType, RequestFilter, UpdateRequestBody } from '../../api/types';
 import { useSeerrClient, useSession } from '../../auth/AuthProvider';
 import { assertNever } from '../../api/assertNever';
 import { canManageRequests } from '../../lib/permissions';
@@ -35,6 +35,18 @@ export function useRequestCount() {
     queryFn: ({ signal }) => {
       if (!client) throw new Error('Missing client');
       return client.getRequestCount(signal);
+    },
+  });
+}
+
+export function useRequest(id: number) {
+  const client = useSeerrClient();
+  return useQuery({
+    queryKey: queryKeys.request(id),
+    enabled: client != null && id > 0,
+    queryFn: ({ signal }) => {
+      if (!client) throw new Error('Missing client');
+      return client.getRequest(id, signal);
     },
   });
 }
@@ -80,6 +92,7 @@ export function useSubmitRequest() {
   const queryClient = useQueryClient();
   const { session } = useSession();
   return useMutation({
+    retry: false,
     mutationFn: (body: CreateRequestBody) => {
       if (!client) throw new Error('Missing client');
       return client.submitRequest(body);
@@ -98,6 +111,7 @@ function useRequestMutation(action: 'approve' | 'decline' | 'delete') {
   const client = useSeerrClient();
   const queryClient = useQueryClient();
   return useMutation({
+    retry: false,
     mutationFn: (input: { id: number; mediaType: MediaType; tmdbId: number }) => {
       if (!client) throw new Error('Missing client');
       switch (action) {
@@ -112,7 +126,10 @@ function useRequestMutation(action: 'approve' | 'decline' | 'delete') {
       }
     },
     onSuccess: async (_result, input) => {
-      await invalidateRequestChange(queryClient, { mediaType: input.mediaType, tmdbId: input.tmdbId });
+      await Promise.all([
+        invalidateRequestChange(queryClient, { mediaType: input.mediaType, tmdbId: input.tmdbId }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.request(input.id) }),
+      ]);
     },
   });
 }
@@ -120,3 +137,42 @@ function useRequestMutation(action: 'approve' | 'decline' | 'delete') {
 export const useApproveRequest = () => useRequestMutation('approve');
 export const useDeclineRequest = () => useRequestMutation('decline');
 export const useDeleteRequest = () => useRequestMutation('delete');
+
+export function useUpdateRequest() {
+  const client = useSeerrClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    retry: false,
+    mutationFn: (input: {
+      id: number;
+      body: UpdateRequestBody;
+      tmdbId: number;
+    }) => {
+      if (!client) throw new Error('Missing client');
+      return client.updateRequest(input.id, input.body);
+    },
+    onSuccess: async (request, input) => {
+      queryClient.setQueryData(queryKeys.request(input.id), request);
+      await invalidateRequestChange(queryClient, {
+        mediaType: input.body.mediaType,
+        tmdbId: input.tmdbId,
+      });
+    },
+  });
+}
+
+export function useRetryRequest() {
+  const client = useSeerrClient();
+  const queryClient = useQueryClient();
+  return useMutation({
+    retry: false,
+    mutationFn: (input: { id: number; mediaType: MediaType; tmdbId: number }) => {
+      if (!client) throw new Error('Missing client');
+      return client.retryRequest(input.id);
+    },
+    onSuccess: async (request, input) => {
+      queryClient.setQueryData(queryKeys.request(input.id), request);
+      await invalidateRequestChange(queryClient, input);
+    },
+  });
+}

@@ -30,6 +30,9 @@ export type MediaRequestSummary = {
 };
 
 export type MediaInfo = {
+  id?: number;
+  tmdbId?: number;
+  mediaType?: MediaType;
   status?: number;
   status4k?: number;
   mediaUrl?: string | null;
@@ -242,4 +245,67 @@ export type ListRequestsQuery = {
   filter: RequestFilter;
   sort: 'added' | 'modified';
   sortDirection: 'asc' | 'desc';
+};
+
+export type UpdateRequestBody = {
+  mediaType: MediaType;
+  seasons?: number[];
+  is4k?: boolean;
+};
+
+export const issueFilters = ['all', 'open', 'resolved'] as const;
+export type IssueFilter = (typeof issueFilters)[number];
+export type IssueType = 1 | 2 | 3 | 4;
+export type IssueStatus = 1 | 2;
+
+export type IssueComment = {
+  id: number;
+  message: string;
+  user: RequestedBy;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type Issue = {
+  id: number;
+  issueType: number;
+  status: number;
+  problemSeason?: number;
+  problemEpisode?: number;
+  media: {
+    id: number;
+    tmdbId: number;
+    mediaType: MediaType;
+    status?: number;
+    status4k?: number;
+  };
+  createdBy: RequestedBy;
+  modifiedBy?: RequestedBy;
+  comments: IssueComment[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type IssueList = {
+  page: number;
+  pages: number;
+  results: Issue[];
+};
+
+export type IssueCount = {
+  total: number;
+  video: number;
+  audio: number;
+  subtitles: number;
+  others: number;
+  open: number;
+  closed: number;
+};
+
+export type CreateIssueBody = {
+  issueType: IssueType;
+  message: string;
+  mediaId: number;
+  problemSeason?: number;
+  problemEpisode?: number;
 };

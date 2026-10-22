@@ -15,7 +15,7 @@ import { useMediaDetails, useRelatedMedia } from '@/features/media/hooks';
 import { usePublicSettings } from '@/features/server/hooks';
 import { en } from '@/i18n/en';
 import { mediaYear } from '@/lib/format';
-import { canRequest4kMovie, canRequest4kTv, canRequestMovie, canRequestTv } from '@/lib/permissions';
+import { canCreateIssues, canRequest4kMovie, canRequest4kTv, canRequestMovie, canRequestTv } from '@/lib/permissions';
 import { isQualityRequestable } from '@/lib/requestability';
 import { mediaDisplayStatus } from '@/lib/status';
 import { httpHost, posterUrl, safeHttpUrl } from '@/lib/tmdb';
@@ -117,6 +117,18 @@ export function DetailsView({ mediaType, id }: Props) {
                 { text: en.actions.cancel, style: 'cancel' },
                 { text: en.actions.continue, onPress: () => void Linking.openURL(libraryUrl) },
               ])
+            }
+          />
+        ) : null}
+        {mediaInfo?.id != null && canCreateIssues(permissions) ? (
+          <Button
+            label={en.issues.report}
+            variant="secondary"
+            onPress={() =>
+              router.push({
+                pathname: '/issue/create',
+                params: { mediaId: String(mediaInfo.id), mediaType, title },
+              })
             }
           />
         ) : null}

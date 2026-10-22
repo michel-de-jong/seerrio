@@ -11,6 +11,9 @@ export const Permission = {
   REQUEST_VIEW: 16384,
   REQUEST_MOVIE: 262144,
   REQUEST_TV: 524288,
+  MANAGE_ISSUES: 1048576,
+  VIEW_ISSUES: 2097152,
+  CREATE_ISSUES: 4194304,
 } as const;
 
 export function hasPermission(permissions: number, ...bits: readonly number[]): boolean {
@@ -27,6 +30,14 @@ export const canRequestMovie = (permissions: number): boolean =>
   hasPermission(permissions, Permission.REQUEST, Permission.REQUEST_MOVIE);
 
 export const canRequestTv = (permissions: number): boolean => hasPermission(permissions, Permission.REQUEST, Permission.REQUEST_TV);
+
+export const canManageIssues = (permissions: number): boolean => hasPermission(permissions, Permission.MANAGE_ISSUES);
+
+export const canViewIssues = (permissions: number): boolean =>
+  hasPermission(permissions, Permission.MANAGE_ISSUES, Permission.VIEW_ISSUES, Permission.CREATE_ISSUES);
+
+export const canCreateIssues = (permissions: number): boolean =>
+  hasPermission(permissions, Permission.MANAGE_ISSUES, Permission.CREATE_ISSUES);
 
 export const canRequest4kMovie = (permissions: number): boolean =>
   hasPermission(permissions, Permission.REQUEST_4K, Permission.REQUEST_4K_MOVIE);

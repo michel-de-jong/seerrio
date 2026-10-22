@@ -1,19 +1,40 @@
 import { createRequest, type SeerrClientOptions } from './client';
 import { getMe, logout, resetPassword, signIn } from './endpoints/auth';
 import { discover, discoverCategory, type DiscoverCategory } from './endpoints/discover';
+import {
+  addIssueComment,
+  createIssue,
+  deleteIssue,
+  deleteIssueComment,
+  getIssue,
+  getIssueCount,
+  listIssues,
+  setIssueStatus,
+  updateIssueComment,
+} from './endpoints/issues';
 import { getCollection, getMovie, getPerson, getRelated, getSeason, getTv } from './endpoints/media';
 import {
   approveRequest,
   declineRequest,
   deleteRequest,
+  getRequest,
   getRequestCount,
   listRequests,
+  retryRequest,
   submitRequest,
+  updateRequest,
 } from './endpoints/requests';
 import { search } from './endpoints/search';
 import { getPublicSettings, getStatus } from './endpoints/settings';
 import { getQuota } from './endpoints/users';
-import type { CreateRequestBody, DiscoverFeed, ListRequestsQuery } from './types';
+import type {
+  CreateIssueBody,
+  CreateRequestBody,
+  DiscoverFeed,
+  IssueFilter,
+  ListRequestsQuery,
+  UpdateRequestBody,
+} from './types';
 
 export function createSeerrClient(options: SeerrClientOptions) {
   const request = createRequest(options);
@@ -53,6 +74,19 @@ export function createSeerrClient(options: SeerrClientOptions) {
     approveRequest: (id: number) => approveRequest(request, id),
     declineRequest: (id: number) => declineRequest(request, id),
     deleteRequest: (id: number) => deleteRequest(request, id),
+    getRequest: (id: number, signal?: AbortSignal) => getRequest(request, id, signal),
+    updateRequest: (id: number, body: UpdateRequestBody) => updateRequest(request, id, body),
+    retryRequest: (id: number) => retryRequest(request, id),
+    listIssues: (filter: IssueFilter, take: number, skip: number, signal?: AbortSignal) =>
+      listIssues(request, filter, take, skip, signal),
+    getIssue: (id: number, signal?: AbortSignal) => getIssue(request, id, signal),
+    getIssueCount: (signal?: AbortSignal) => getIssueCount(request, signal),
+    createIssue: (body: CreateIssueBody) => createIssue(request, body),
+    addIssueComment: (id: number, message: string) => addIssueComment(request, id, message),
+    setIssueStatus: (id: number, status: 'open' | 'resolved') => setIssueStatus(request, id, status),
+    deleteIssue: (id: number) => deleteIssue(request, id),
+    updateIssueComment: (id: number, message: string) => updateIssueComment(request, id, message),
+    deleteIssueComment: (id: number) => deleteIssueComment(request, id),
     getQuota: (userId: number, signal?: AbortSignal) => getQuota(request, userId, signal),
   };
 }

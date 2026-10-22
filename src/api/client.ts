@@ -11,7 +11,7 @@ export type ClientAuth =
   | { kind: 'apiKey'; apiKey: string; cookie?: string };
 
 export type SeerrRequestOptions = {
-  method?: 'GET' | 'POST' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   query?: Record<string, string | number | boolean | undefined>;
   body?: unknown;
   anonymous?: boolean;
@@ -68,7 +68,7 @@ export function createRequest(options: SeerrClientOptions): SeerrRequest {
     if (!requestOptions.anonymous && auth.kind === 'apiKey' && auth.apiKey) {
       headers['X-Api-Key'] = auth.apiKey;
     }
-    if (method === 'POST' || method === 'DELETE') {
+    if (method !== 'GET') {
       const token = csrfToken(cookie);
       if (token) headers['X-XSRF-TOKEN'] = token;
     }
@@ -114,7 +114,7 @@ export function createRequest(options: SeerrClientOptions): SeerrRequest {
         const serverMessage = messageFromBody(parsed);
         const canRefreshCsrf =
           !requestOptions.csrfRetried &&
-          (method === 'POST' || method === 'DELETE') &&
+          method !== 'GET' &&
           response.status === 403 &&
           /csrf/i.test(serverMessage);
         if (canRefreshCsrf) {

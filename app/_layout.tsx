@@ -103,6 +103,9 @@ function RootNavigator() {
         <Stack.Screen name="collection/[id]" options={{ title: en.media.collection }} />
         <Stack.Screen name="discover/[type]/[category]/[value]" options={{ title: en.discover.browse }} />
         <Stack.Screen name="request/[type]/[id]" options={{ presentation: 'modal', title: en.request.title }} />
+        <Stack.Screen name="request/[id]" options={{ title: en.requests.detailTitle }} />
+        <Stack.Screen name="issue/create" options={{ presentation: 'modal', title: en.issues.report }} />
+        <Stack.Screen name="issue/[id]" options={{ title: en.issues.detailTitle }} />
       </Stack>
     </>
   );

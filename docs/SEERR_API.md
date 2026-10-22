@@ -90,7 +90,19 @@ This app uses Seerr's native accounts ("local users"): an email and a password s
 | `GET /request/count` | Counts per status | Managers' badge |
 | `POST /request/{id}/approve` | Approve | MANAGE_REQUESTS |
 | `POST /request/{id}/decline` | Decline | MANAGE_REQUESTS |
+| `GET /request/{id}` | Request detail | Server enforces visibility |
+| `PUT /request/{id}` | Edit pending request | MANAGE_REQUESTS; `{ mediaType, seasons?, is4k? }` |
+| `POST /request/{id}/retry` | Retry a failed request | MANAGE_REQUESTS |
 | `DELETE /request/{id}` | Cancel or delete | The requester while pending, or MANAGE_REQUESTS |
+| `GET /issue` | List issues | Server scopes create-only users to their own issues |
+| `GET /issue/count` | Issue counts | Used only for managers in the app |
+| `GET /issue/{id}` | Issue detail and comments | Owner, VIEW_ISSUES, or MANAGE_ISSUES |
+| `POST /issue` | Create an issue | CREATE_ISSUES or MANAGE_ISSUES |
+| `POST /issue/{id}/comment` | Add a comment | Owner or MANAGE_ISSUES |
+| `POST /issue/{id}/{open\|resolved}` | Change issue status | Owner or MANAGE_ISSUES |
+| `DELETE /issue/{id}` | Delete an issue | Owner before replies, or MANAGE_ISSUES |
+| `PUT /issueComment/{id}` | Edit a comment | Comment owner or MANAGE_ISSUES |
+| `DELETE /issueComment/{id}` | Delete a comment | Comment owner or MANAGE_ISSUES |
 | `GET /user/{id}/quota` | Quota | `movie` and `tv`, each with `limit`, `days`, `used`, `remaining`, `restricted` |
 
 Search and discover items have `mediaType` (`movie`, `tv`, `person`, sometimes others), `id` (TMDB id), `title` (movies) or `name` (series), `releaseDate` or `firstAirDate`, `posterPath`, `backdropPath`, `overview`, and an optional `mediaInfo` with `status` and `status4k`. Show only `movie` and `tv`.
@@ -209,6 +221,9 @@ First match wins. Use `media.status4k` when `request.is4k` is true.
 | REQUEST_VIEW | 16384 |
 | REQUEST_MOVIE | 262144 |
 | REQUEST_TV | 524288 |
+| MANAGE_ISSUES | 1048576 |
+| VIEW_ISSUES | 2097152 |
+| CREATE_ISSUES | 4194304 |
 
 Helpers (true with ADMIN or any listed bit):
 

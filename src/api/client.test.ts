@@ -110,6 +110,29 @@ describe('createSeerrClient', () => {
     expect(retry.get('cookie')).toContain('_csrf=secret');
   });
 
+  it('protects PUT mutations with the csrf token', async () => {
+    const fetchMock = jest.fn(async (_input: string, _init: RequestInit) =>
+      jsonResponse(200, {
+        id: 7,
+        status: 1,
+        type: 'movie',
+        is4k: false,
+        seasons: [],
+        media: { tmdbId: 8, mediaType: 'movie' },
+      }),
+    );
+    const client = createSeerrClient({
+      serverUrl,
+      getAuth: async () => ({ kind: 'cookie', cookie: 'XSRF-TOKEN=put-token; connect.sid=session' }),
+      fetch: fetchMock,
+    });
+
+    await client.updateRequest(7, { mediaType: 'movie' });
+    const init = fetchMock.mock.calls[0]?.[1];
+    expect(init?.method).toBe('PUT');
+    expect(new Headers(init?.headers).get('x-xsrf-token')).toBe('put-token');
+  });
+
   it('reads message, then error, and keeps the path off the secret values', async () => {
     const client = createSeerrClient({
       serverUrl,

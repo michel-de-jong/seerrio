@@ -3,6 +3,10 @@ import type {
   CollectionSummary,
   CreatedRequest,
   EpisodeDetails,
+  Issue,
+  IssueComment,
+  IssueCount,
+  IssueList,
   MediaInfo,
   MediaItem,
   MediaRequest,
@@ -17,6 +21,7 @@ import type {
   QuotaBucket,
   RequestCount,
   RequestList,
+  RequestedBy,
   ResultsPage,
   SeerrUser,
   SeasonDetails,
@@ -70,6 +75,9 @@ export function parseMediaInfo(value: unknown): MediaInfo | undefined {
   const status = numberField(value, 'status');
   const status4k = numberField(value, 'status4k');
   const mediaUrl = stringField(value, 'mediaUrl');
+  const id = numberField(value, 'id');
+  const tmdbId = numberField(value, 'tmdbId');
+  const mediaType = mediaTypeOf(value.mediaType);
   const seasons = Array.isArray(value.seasons)
     ? value.seasons.flatMap((season) => {
         if (!isRecord(season)) return [];
@@ -93,6 +101,9 @@ export function parseMediaInfo(value: unknown): MediaInfo | undefined {
       })
     : undefined;
   return {
+    ...(id === undefined ? {} : { id }),
+    ...(tmdbId === undefined ? {} : { tmdbId }),
+    ...(mediaType === null ? {} : { mediaType }),
     ...(status === undefined ? {} : { status }),
     ...(status4k === undefined ? {} : { status4k }),
     ...(mediaUrl === undefined ? {} : { mediaUrl }),
@@ -392,7 +403,7 @@ function parseRequestedBy(value: unknown): MediaRequest['requestedBy'] {
   };
 }
 
-function parseMediaRequest(value: unknown): MediaRequest | null {
+export function parseMediaRequest(value: unknown): MediaRequest | null {
   if (!isRecord(value) || !isRecord(value.media)) return null;
   const id = numberField(value, 'id');
   const status = numberField(value, 'status');
@@ -426,6 +437,116 @@ function parseMediaRequest(value: unknown): MediaRequest | null {
       ...(mediaStatus === undefined ? {} : { status: mediaStatus }),
       ...(mediaStatus4k === undefined ? {} : { status4k: mediaStatus4k }),
     },
+  };
+}
+
+function parseIssueUser(value: unknown): RequestedBy | null {
+  if (!isRecord(value)) return null;
+  const id = numberField(value, 'id');
+  if (id === undefined) return null;
+  const displayName = stringField(value, 'displayName');
+  const email = stringField(value, 'email');
+  return {
+    id,
+    ...(displayName === undefined ? {} : { displayName }),
+    ...(email === undefined ? {} : { email }),
+  };
+}
+
+function parseIssueComment(value: unknown): IssueComment | null {
+  if (!isRecord(value)) return null;
+  const id = numberField(value, 'id');
+  const message = stringField(value, 'message');
+  const user = parseIssueUser(value.user);
+  if (id === undefined || message === undefined || !user) return null;
+  const createdAt = stringField(value, 'createdAt');
+  const updatedAt = stringField(value, 'updatedAt');
+  return {
+    id,
+    message,
+    user,
+    ...(createdAt === undefined ? {} : { createdAt }),
+    ...(updatedAt === undefined ? {} : { updatedAt }),
+  };
+}
+
+export function parseIssue(value: unknown): Issue | null {
+  if (!isRecord(value) || !isRecord(value.media)) return null;
+  const id = numberField(value, 'id');
+  const issueType = numberField(value, 'issueType');
+  const status = numberField(value, 'status');
+  const mediaId = numberField(value.media, 'id');
+  const tmdbId = numberField(value.media, 'tmdbId');
+  const mediaType = mediaTypeOf(value.media.mediaType);
+  const createdBy = parseIssueUser(value.createdBy);
+  if (
+    id === undefined ||
+    issueType === undefined ||
+    status === undefined ||
+    mediaId === undefined ||
+    tmdbId === undefined ||
+    !mediaType ||
+    !createdBy
+  ) {
+    return null;
+  }
+  const modifiedBy = parseIssueUser(value.modifiedBy);
+  const problemSeason = numberField(value, 'problemSeason');
+  const problemEpisode = numberField(value, 'problemEpisode');
+  const createdAt = stringField(value, 'createdAt');
+  const updatedAt = stringField(value, 'updatedAt');
+  const mediaStatus = numberField(value.media, 'status');
+  const mediaStatus4k = numberField(value.media, 'status4k');
+  return {
+    id,
+    issueType,
+    status,
+    ...(problemSeason === undefined ? {} : { problemSeason }),
+    ...(problemEpisode === undefined ? {} : { problemEpisode }),
+    media: {
+      id: mediaId,
+      tmdbId,
+      mediaType,
+      ...(mediaStatus === undefined ? {} : { status: mediaStatus }),
+      ...(mediaStatus4k === undefined ? {} : { status4k: mediaStatus4k }),
+    },
+    createdBy,
+    ...(modifiedBy === null ? {} : { modifiedBy }),
+    comments: Array.isArray(value.comments)
+      ? value.comments.flatMap((comment) => {
+          const parsed = parseIssueComment(comment);
+          return parsed ? [parsed] : [];
+        })
+      : [],
+    ...(createdAt === undefined ? {} : { createdAt }),
+    ...(updatedAt === undefined ? {} : { updatedAt }),
+  };
+}
+
+export function parseIssueList(value: unknown): IssueList | null {
+  if (!isRecord(value) || !Array.isArray(value.results)) return null;
+  const pageInfo = isRecord(value.pageInfo) ? value.pageInfo : {};
+  return {
+    page: numberField(pageInfo, 'page') ?? 1,
+    pages: numberField(pageInfo, 'pages') ?? 1,
+    results: value.results.flatMap((issue) => {
+      const parsed = parseIssue(issue);
+      return parsed ? [parsed] : [];
+    }),
+  };
+}
+
+export function parseIssueCount(value: unknown): IssueCount | null {
+  if (!isRecord(value)) return null;
+  const count = (key: keyof IssueCount) => numberField(value, key) ?? 0;
+  return {
+    total: count('total'),
+    video: count('video'),
+    audio: count('audio'),
+    subtitles: count('subtitles'),
+    others: count('others'),
+    open: count('open'),
+    closed: count('closed'),
   };
 }
 

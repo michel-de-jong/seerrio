@@ -12,7 +12,8 @@ Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebas
 * Discover trending, popular and upcoming movies and series. Search. Rich movie and series details by TMDB id.
 * Browse cast, people and their combined credits, movie collections, recommendations, similar titles, genres, original languages, studios, networks, and TV season/episode details.
 * Request a movie, or explicit TV seasons. Optional 4K when the server and the user allow it.
-* List requests, and let a manager approve or decline. The requester can remove a pending request; a manager can remove any request.
+* List and inspect requests. Managers can edit pending requests, approve, decline, and retry failed requests. The requester can remove a pending request; a manager can remove any request.
+* Report and follow media issues. Supported users can list and inspect issues, comment, resolve/reopen, and edit or delete their own comments; moderators can manage all issues.
 * Profile with quota, server, and sign out.
 
 ## Out of scope
@@ -87,6 +88,15 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 * Approve and decline are shown to someone with manage-requests permission while the request is pending. Confirm both.
 * The requester can remove their own pending request. A manager can remove any request. Confirm removal.
 * The tab badge is the pending count from `GET /request/count`, for managers only.
+* A request detail screen is available to users who can see the request. Only managers can edit a pending request or retry a failed request. Every action requires confirmation and mutation retries stay off.
+
+## Issues
+
+* The Issues tab is visible only with CREATE_ISSUES, VIEW_ISSUES, MANAGE_ISSUES, or ADMIN. Users with create-only permission see only their own issues because the server scopes the list.
+* A report can be created from a title Seerr already knows. It has a video, audio, subtitle, or other type, a non-empty message, and optional TV season/episode numbers.
+* Issue owners and managers can comment and open/resolve an issue. A user can edit or delete their own comment; managers can edit or delete any comment.
+* An owner can delete their issue only before another comment exists. Managers can delete any issue. Confirm status changes and deletions.
+* Managers see the open-issue count on the tab. Mutations never retry automatically and invalidate issue list, detail, and count data.
 
 ## Profile
 

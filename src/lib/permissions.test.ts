@@ -1,4 +1,12 @@
-import { Permission, canRequestMovie, canRequestTv, hasPermission } from './permissions';
+import {
+  Permission,
+  canCreateIssues,
+  canManageIssues,
+  canRequestMovie,
+  canRequestTv,
+  canViewIssues,
+  hasPermission,
+} from './permissions';
 
 describe('permissions', () => {
   it('treats admin as every permission', () => {
@@ -12,5 +20,13 @@ describe('permissions', () => {
     expect(canRequestMovie(Permission.REQUEST_MOVIE)).toBe(true);
     expect(canRequestTv(Permission.REQUEST_MOVIE)).toBe(false);
     expect(canRequestMovie(0)).toBe(false);
+  });
+
+  it('keeps issue creation, viewing, and moderation permissions distinct', () => {
+    expect(canCreateIssues(Permission.CREATE_ISSUES)).toBe(true);
+    expect(canViewIssues(Permission.CREATE_ISSUES)).toBe(true);
+    expect(canManageIssues(Permission.CREATE_ISSUES)).toBe(false);
+    expect(canViewIssues(Permission.VIEW_ISSUES)).toBe(true);
+    expect(canCreateIssues(Permission.VIEW_ISSUES)).toBe(false);
   });
 });

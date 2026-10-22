@@ -1,4 +1,4 @@
-import { parseCollection, parsePerson, parseSeason } from './parse';
+import { parseCollection, parseIssue, parsePerson, parseSeason } from './parse';
 
 describe('rich media parsers', () => {
   it('parses a TV season and ignores malformed episodes', () => {
@@ -51,5 +51,22 @@ describe('rich media parsers', () => {
 
     expect(collection?.name).toBe('Example Collection');
     expect(collection?.parts).toHaveLength(1);
+  });
+
+  it('parses an issue with comments and media identifiers', () => {
+    const issue = parseIssue({
+      id: 40,
+      issueType: 1,
+      status: 1,
+      media: { id: 41, tmdbId: 42, mediaType: 'movie', status: 5 },
+      createdBy: { id: 2, email: 'user@example.test' },
+      comments: [{ id: 43, message: 'Playback problem', user: { id: 2, email: 'user@example.test' } }],
+    });
+
+    expect(issue).toMatchObject({
+      id: 40,
+      media: { id: 41, tmdbId: 42, mediaType: 'movie' },
+      comments: [{ id: 43, message: 'Playback problem' }],
+    });
   });
 });

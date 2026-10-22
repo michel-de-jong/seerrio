@@ -1,4 +1,4 @@
-import type { DiscoverFeed, RequestFilter } from '../api/types';
+import type { DiscoverFeed, IssueFilter, RequestFilter } from '../api/types';
 
 export const queryKeys = {
   publicSettings: (serverUrl: string) => ['public-settings', serverUrl] as const,
@@ -17,5 +17,11 @@ export const queryKeys = {
   requests: (filter: RequestFilter) => ['requests', filter] as const,
   requestsAll: ['requests'] as const,
   requestCount: ['request-count'] as const,
+  request: (id: number) => ['request', id] as const,
+  issues: (filter: IssueFilter) => ['issues', filter] as const,
+  issuesAll: ['issues'] as const,
+  issueAll: ['issue'] as const,
+  issue: (id: number) => ['issue', id] as const,
+  issueCount: ['issue-count'] as const,
   quota: (userId: number) => ['quota', userId] as const,
 };
