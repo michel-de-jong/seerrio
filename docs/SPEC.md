@@ -108,7 +108,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 * Current users can update their display name, email, locale, discovery region, streaming region, and original language. Existing quota and watchlist-sync fields are round-tripped unchanged.
 * Notification event masks can be changed per configured channel. Channel credentials are never displayed or persisted by the app; they stay only in an in-memory query with immediate garbage collection after the screen closes and are round-tripped so saving masks does not erase them.
 * Password changes require the current password when Seerr says one exists, an 8-character minimum, matching confirmation, and explicit confirmation. Password fields are never persisted and clear after success.
-* Appearance offers System, Light, and Dark. System follows the phone. The choice is stored on the device and contains no account data.
+* Appearance offers System, Light, and Dark. Dark is the default, matching Seerr's web interface; System follows the phone. The choice is stored on the device and contains no account data. Navigation screens, tab scenes, native controls, and the root view all follow the chosen theme.
 * TV request and pending-request editing use selectable season cards, including episode counts when Seerr provides them.
 * TanStack Query data is cleared whenever the server or signed-in user changes, including sign-out.
 

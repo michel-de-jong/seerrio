@@ -1,8 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { Appearance as NativeAppearance, Platform, useColorScheme } from 'react-native';
 
-import { isAppearance, resolveTheme, type Appearance } from './appearance';
+import { defaultAppearance, isAppearance, resolveTheme, type Appearance } from './appearance';
 import type { Theme } from './tokens';
 
 const appearanceKey = 'seerr.appearance';
@@ -15,7 +15,7 @@ type AppearanceContextValue = {
 const AppearanceContext = createContext<AppearanceContextValue | null>(null);
 
 export function AppearanceProvider({ children }: { children: ReactNode }) {
-  const [appearance, setAppearanceState] = useState<Appearance>('system');
+  const [appearance, setAppearanceState] = useState<Appearance>(defaultAppearance);
 
   useEffect(() => {
     if (Platform.OS === 'web') return;
@@ -27,6 +27,11 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    NativeAppearance.setColorScheme(appearance === 'system' ? 'unspecified' : appearance);
+  }, [appearance]);
 
   const setAppearance = useCallback((value: Appearance) => {
     setAppearanceState(value);
@@ -48,6 +53,6 @@ export function useAppearance(): AppearanceContextValue {
 
 export function useTheme(): Theme {
   const systemScheme = useColorScheme();
-  const appearance = useContext(AppearanceContext)?.appearance ?? 'system';
+  const appearance = useContext(AppearanceContext)?.appearance ?? defaultAppearance;
   return resolveTheme(appearance, systemScheme);
 }

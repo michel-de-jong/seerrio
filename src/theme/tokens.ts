@@ -1,11 +1,11 @@
 export const lightTheme = {
   dark: false,
   colors: {
-    background: '#F8F7FF',
+    background: '#EEF0F8',
     surface: '#FFFFFF',
     text: '#111827',
     muted: '#6B7280',
-    border: '#E5E7EB',
+    border: '#DDE1EE',
     accent: '#615FFF',
     accentText: '#FFFFFF',
     accentSoft: '#EEF0FF',
