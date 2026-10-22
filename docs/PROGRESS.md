@@ -15,7 +15,7 @@ You fill in Decisions before Phase 0. The agent updates the rest at the end of e
 | Sign-in | Seerr accounts (email and password) via `/auth/local`; API key under Advanced | Fixed: this server uses Seerr's own accounts, not Jellyfin sign-in |
 | Forgot password in the app | when `emailEnabled` is true | The link is hidden otherwise. The app does not call reset unless the user asks |
 | Languages | English | Dutch later? |
-| Stack | Expo SDK 58, React Native 0.88, TypeScript | Expo Go is for development. EAS produces standalone native apps; users do not need Expo Go |
+| Stack | Expo SDK 57, React Native 0.86, TypeScript | Moved down from SDK 58 on 2026-10-22: the App Store and Play Store copies of Expo Go are still SDK 57, and Android blocked sideloading Expo Go 58. SDK 57 meets the RN 0.86+ requirement for `credentials: 'omit'`. Move to SDK 58 once the store Expo Go supports it. Expo Go is for development; EAS produces standalone native apps |
 | Auth transport | Session cookie sent as a manual Cookie header; API key only under Advanced | Fixed, see SEERR_API.md |
 | Routes | `app/` | The Expo template prefers `src/app/`. This project keeps routes in `app/` as AGENTS.md says |
 | Typed routes | off | `tsc` does not depend on generated `.expo` types |
@@ -25,7 +25,7 @@ You fill in Decisions before Phase 0. The agent updates the rest at the end of e
 | Request list scope | server-scoped | No Mine/All toggle. The server already limits users who cannot see every request |
 | Requests tab badge | pending count | Shown only when the signed-in user can manage requests and the count is greater than 0 |
 | Quota request failure | form stays usable | A restricted quota with too few remaining requests disables submit. A failed quota call does not |
-| `react-dom` | pinned to 19.3.0 | Expo pins React 19.3.0. A transitive package wants react-dom 19.3.1, which refuses to install without the override |
+| `react-dom` | pinned to 19.2.3 | Overridden to match React 19.2.3 on SDK 57, so no transitive package pulls in a newer react-dom |
 
 ## Server facts (from npm run smoke)
 
@@ -58,7 +58,7 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 | Package | Why | Phase |
 | --- | --- | --- |
-| expo, expo-router, expo-constants, expo-linking, expo-status-bar, expo-system-ui, react, react-native, react-native-screens, react-native-safe-area-context, react-native-gesture-handler, react-native-reanimated | Expo SDK 58 app shell and navigation. Gesture handler is ~3.3.0, the version Expo installs | 0 |
+| expo, expo-router, expo-constants, expo-linking, expo-status-bar, expo-system-ui, react, react-native, react-native-screens, react-native-safe-area-context, react-native-gesture-handler, react-native-reanimated | Expo SDK 57 app shell and navigation, at the versions `npx expo install --check` expects | 0 |
 | @tanstack/react-query 5.104.5 | Server state. Stay on v5 | 0 |
 | expo-secure-store | Session cookie, optional API key, and cached user | 2 |
 | expo-image | Posters, backdrops, and avatars | 3 |
@@ -66,12 +66,12 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | @expo/vector-icons | Tab icons | 3 |
 | expo-build-properties | Enable Android cleartext traffic for user-supplied HTTP Seerr servers in generated native builds | 7 |
 | expo-font, react-native-worklets | Required native peers for vector icons and Reanimated. Expo Go had supplied these implicitly; standalone builds require direct dependencies | 7 |
-| react-native-web, react-dom 19.3.0 | Expo's browser preview. `react-dom` stays on the existing override so it matches React 19.3.0 | 0 |
+| react-native-web, react-dom 19.2.3 | Expo's browser preview. `react-dom` is overridden to match React | 0 |
 | typescript, eslint, eslint-config-expo, @types/react | Typecheck and lint | 0 |
 | jest, jest-expo, @types/jest, @types/node | Unit tests and the Node smoke script | 1 |
 | tsx | Run `scripts/smoke.ts` | 1 |
 
-`npm` override `"react-dom": "19.3.0"` keeps installs working. See Decisions.
+`npm` override `"react-dom": "19.2.3"` keeps installs working. See Decisions.
 
 ## API surprises
 
@@ -92,9 +92,12 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 * Nothing in this change has been opened in Expo Go. The phone checks below are still open.
 * No EAS project has been linked and no signed binary has been built. Run `npx eas-cli init`, then a preview build.
 * `npm` reports audit findings in the Expo dependency tree. They were left alone.
+* The browser preview stores the session cookie and optional API key in `localStorage`. Phones keep them in the platform keychain.
 
 ## Log
 
 * 2026-10-21 · Phases 0–6 · Scaffolded the Expo app, Seerr client, session, and the screens in `docs/SPEC.md`. `PLANNING.md` was not in the repo, so behavior is recorded in `docs/SPEC.md`. Verify with `npm run typecheck`, `npm run lint`, and `npm test`. Then, on iPhone and Android in Expo Go: connect, sign in, discover, search, open a title, request it, review the requests list, and open profile. See the hand-off notes for the exact pass.
 * 2026-10-21 · Phase 7 · Selected `io.seerrlite.app`, added EAS preview/production profiles, and enabled HTTP in generated iOS and Android apps. Verify the resolved Expo config, link the EAS project, then install preview builds on both phones.
 * 2026-10-22 · Web preview · Added `react-native-web` and `react-dom` so the localhost page Expo opens in a browser can bundle. Restart `npx expo start` and reload the page. The phone app is still Expo Go or a native build.
+* 2026-10-22 · Foundation · Moved from Expo SDK 58 to SDK 57 (Expo 57.0.31, React Native 0.86.3, React 19.2.3) so the store Expo Go 57 opens the project on both phones. Typecheck, lint, 38 tests, and Android, iOS, and web bundles pass. Verify by scanning the QR code from `npx expo start` with the store Expo Go.
+* 2026-10-22 · Web preview · The browser no longer calls SecureStore. Reload localhost and confirm the connect screen appears. iOS and Android still use the keychain.
