@@ -24,6 +24,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 * Load status and public settings. Treat a non-semver version as supported. Reject versions below 3.0.0.
 * If the server is not initialized, or local sign-in is off, explain that and do not continue.
 * Store the URL only after those checks pass.
+* Explain whether the phone could not reach the address, the request timed out, the address returned a non-Seerr response, `/api/v1` was missing, a proxy blocked access, or the server failed. Include the safe HTTP status and server message when available.
 * Show a failure with retry, and an offline banner.
 
 ## Sign in
@@ -32,7 +33,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 * Require a password. Do not store it. Tag the fields for the platform password manager.
 * Read the whole sign-in response, store `connect.sid` (or the fallback session cookie) as `name=value` without decoding, then load `/auth/me` and use that user everywhere.
 * Sign in only with `POST /auth/local` (native Seerr accounts).
-* A 401 or 403 on sign-in says the email or password is wrong. A 5xx from Seerr says to check that local sign-in is enabled when public settings say it is off.
+* A 401 or 403 on `/auth/local` says Seerr rejected the native-account sign-in, includes the safe HTTP status and server message, and tells the user to check the account's Email field and Seerr password. A CSRF 403 says CSRF protection blocked the request instead. A 5xx from Seerr says to check that local sign-in is enabled when public settings say it is off.
 * After a successful sign-in, load `/auth/me` once more if the first attempt is 401 or 403. Seerr can still be saving the session. If that also fails, or the phone received no session cookie, say the session did not start.
 * Advanced shows the API-key warning: the key acts as the admin, requests are attributed to the admin and approved automatically, and it belongs on the owner's device only.
 * Sign out calls `POST /auth/logout` as a best effort and clears the cookie, API key, and cached user. Change server also clears the URL.

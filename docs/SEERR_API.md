@@ -225,7 +225,7 @@ The values come from Seerr's `server/lib/permissions.ts`; re-check there if an u
 | --- | --- | --- |
 | 400 | Validator rejected a parameter (query encoding, invalid `filter`) | A bug: record the path (no secrets), show a generic error |
 | 401 | No cookie or API key sent ("cookie 'connect.sid' required") | Signed out |
-| 403 | Wrong email or password (on `/auth/local`), not permitted, quota, expired session, or CSRF ("invalid csrf token") | On sign-in: "Wrong email or password." Elsewhere: if `/auth/me` also fails, signed out; CSRF gets its own message; otherwise show the server message |
+| 403 | Native-account credentials rejected (on `/auth/local`), not permitted, quota, expired session, or CSRF ("invalid csrf token") | On sign-in: show that Seerr rejected the credentials, with the HTTP status and safe server message. Check CSRF first so it is not mislabeled as a credential failure. Elsewhere: if `/auth/me` also fails, signed out; otherwise show the server message |
 | 404 | Not found | Contextual |
 | 409 | Duplicate request | "Already requested" |
 | 5xx | Seerr or an upstream service failed; on `/auth/local` it can also mean local sign-in is turned off | Sign-in: check `localLogin` and show the "turned off" message if it's false. Elsewhere: retry queries with backoff; never auto-retry mutations |

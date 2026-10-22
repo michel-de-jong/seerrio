@@ -49,7 +49,7 @@ export default function ConnectScreen() {
       }
       await saveServer(normalized);
     } catch (caught) {
-      setError(presentError(caught));
+      setError(presentError(caught, 'connect'));
     } finally {
       setLoading(false);
     }

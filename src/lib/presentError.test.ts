@@ -12,10 +12,32 @@ describe('presentError', () => {
     expect(presentError(duplicate)).toBe('Already requested.');
   });
 
-  it('keeps a missing session distinct from a rejected password', () => {
+  it('shows the response that rejected a native-account sign-in', () => {
     const rejected = new SeerrError({ status: 403, path: '/auth/local', serverMessage: 'Access denied.', kind: 'http' });
     const missing = new SeerrError({ status: 0, path: '/auth/me', serverMessage: '', kind: 'parse' });
-    expect(presentError(rejected, 'signIn')).toBe(en.signIn.wrongCredentials);
+    expect(presentError(rejected, 'signIn')).toContain('HTTP 403: Access denied.');
     expect(presentError(missing, 'signIn')).toBe(en.signIn.sessionMissing);
+  });
+
+  it('does not misreport a CSRF rejection as a wrong password', () => {
+    const error = new SeerrError({
+      status: 403,
+      path: '/auth/local',
+      serverMessage: 'invalid csrf token',
+      kind: 'http',
+    });
+    expect(presentError(error, 'signIn')).toBe(en.errors.csrf);
+  });
+
+  it('explains common server connection failures', () => {
+    const unreachable = new SeerrError({ status: 0, path: '/status', serverMessage: '', kind: 'network' });
+    const html = new SeerrError({ status: 200, path: '/status', serverMessage: '', kind: 'parse' });
+    const missing = new SeerrError({ status: 404, path: '/status', serverMessage: '', kind: 'http' });
+    const proxy = new SeerrError({ status: 502, path: '/status', serverMessage: 'Bad Gateway', kind: 'http' });
+
+    expect(presentError(unreachable, 'connect')).toContain('could not reach');
+    expect(presentError(html, 'connect')).toContain('did not return the Seerr API');
+    expect(presentError(missing, 'connect')).toContain('/api/v1');
+    expect(presentError(proxy, 'connect')).toContain('HTTP 502: Bad Gateway');
   });
 });
