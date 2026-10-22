@@ -2,6 +2,8 @@
 
 This checklist compares Seerr Mobile with the vendored Seerr 3.5.0 OpenAPI file in `docs/seerr-api.yml`. “Implemented” means the mobile app exposes the useful operation, not necessarily every query option. Seerr remains the authorization boundary.
 
+The audit found 168 paths and 217 operations. Seerr Mobile calls 80 operations. Of the remainder, 91 were already intentional exclusions, deferred operations, or deprecated aliases; the other 46 are now explicitly classified below rather than silently treated as parity.
+
 ## Implemented mobile surface
 
 ### Connection and native-account authentication
@@ -84,9 +86,12 @@ These endpoints are not required by the phased mobile acceptance spec and are ca
 - Ratings and combined ratings
 - Media database list/status/file-management operations
 - Region, language, studio, network, genre, backdrop, watch-provider, and certification catalogs
-- Blocklist collection operations and deprecated `/blacklist` aliases
+- Blocklist item lookup and collection operations, plus deprecated `/blacklist` aliases
 - Advanced-request override evaluation
 - Per-user request-history endpoint; the Requests tab already uses Seerr’s server-scoped `/request` result
+- Full `PUT /user/{userId}` updates; safe account and quota changes use `/user/{userId}/settings/main`
+- Individual Radarr/Sonarr profile, root-folder, and Sonarr lookup endpoints
+- Individual issue-comment lookup; comments arrive with issue detail
 
 ## Automated release gates
 
