@@ -1,7 +1,7 @@
 import { createRequest, type SeerrClientOptions } from './client';
 import { getMe, logout, resetPassword, signIn } from './endpoints/auth';
 import { discover } from './endpoints/discover';
-import { getMovie, getTv } from './endpoints/media';
+import { getCollection, getMovie, getPerson, getRelated, getSeason, getTv } from './endpoints/media';
 import {
   approveRequest,
   declineRequest,
@@ -29,6 +29,17 @@ export function createSeerrClient(options: SeerrClientOptions) {
     discover: (feed: DiscoverFeed, page: number, signal?: AbortSignal) => discover(request, feed, page, signal),
     getMovie: (id: number, signal?: AbortSignal) => getMovie(request, id, signal),
     getTv: (id: number, signal?: AbortSignal) => getTv(request, id, signal),
+    getRelated: (
+      kind: 'movie' | 'tv',
+      id: number,
+      relation: 'recommendations' | 'similar',
+      page: number,
+      signal?: AbortSignal,
+    ) => getRelated(request, kind, id, relation, page, signal),
+    getSeason: (tvId: number, seasonNumber: number, signal?: AbortSignal) =>
+      getSeason(request, tvId, seasonNumber, signal),
+    getPerson: (id: number, signal?: AbortSignal) => getPerson(request, id, signal),
+    getCollection: (id: number, signal?: AbortSignal) => getCollection(request, id, signal),
     submitRequest: (body: CreateRequestBody) => submitRequest(request, body),
     listRequests: (query: ListRequestsQuery, signal?: AbortSignal) => listRequests(request, query, signal),
     getRequestCount: (signal?: AbortSignal) => getRequestCount(request, signal),

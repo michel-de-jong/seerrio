@@ -1,6 +1,6 @@
 export type MediaType = 'movie' | 'tv';
 
-export const discoverFeeds = ['trending', 'movies', 'tv'] as const;
+export const discoverFeeds = ['trending', 'movies', 'tv', 'upcomingMovies', 'upcomingTv'] as const;
 export type DiscoverFeed = (typeof discoverFeeds)[number];
 
 export const requestFilters = [
@@ -88,6 +88,20 @@ export type TvSeason = {
   posterPath: string | null;
 };
 
+export type PersonCredit = {
+  id: number;
+  name: string;
+  character?: string;
+  profilePath: string | null;
+};
+
+export type CollectionSummary = {
+  id: number;
+  name: string;
+  posterPath: string | null;
+  backdropPath: string | null;
+};
+
 export type MovieDetails = {
   id: number;
   title: string;
@@ -97,6 +111,8 @@ export type MovieDetails = {
   releaseDate?: string;
   runtime?: number;
   mediaInfo?: MediaInfo;
+  cast?: PersonCredit[];
+  collection?: CollectionSummary;
 };
 
 export type TvDetails = {
@@ -108,6 +124,40 @@ export type TvDetails = {
   firstAirDate?: string;
   seasons: TvSeason[];
   mediaInfo?: MediaInfo;
+  cast?: PersonCredit[];
+};
+
+export type EpisodeDetails = {
+  id: number;
+  name: string;
+  episodeNumber: number;
+  airDate?: string;
+  overview?: string;
+  stillPath: string | null;
+};
+
+export type SeasonDetails = {
+  id: number;
+  name: string;
+  seasonNumber: number;
+  overview?: string;
+  posterPath: string | null;
+  episodes: EpisodeDetails[];
+};
+
+export type PersonDetails = {
+  id: number;
+  name: string;
+  biography?: string;
+  knownForDepartment?: string;
+  placeOfBirth?: string;
+  profilePath: string | null;
+  credits: MediaItem[];
+};
+
+export type CollectionDetails = CollectionSummary & {
+  overview?: string;
+  parts: MediaItem[];
 };
 
 export type RequestedBy = {

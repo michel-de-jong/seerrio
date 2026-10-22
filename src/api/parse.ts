@@ -1,11 +1,16 @@
 import type {
+  CollectionDetails,
+  CollectionSummary,
   CreatedRequest,
+  EpisodeDetails,
   MediaInfo,
   MediaItem,
   MediaRequest,
   MediaRequestSummary,
   MediaType,
   MovieDetails,
+  PersonCredit,
+  PersonDetails,
   PublicSettings,
   Quota,
   QuotaBucket,
@@ -13,6 +18,7 @@ import type {
   RequestList,
   ResultsPage,
   SeerrUser,
+  SeasonDetails,
   ServerStatus,
   TvDetails,
   TvSeason,
@@ -119,6 +125,41 @@ function parseMediaItem(value: unknown): MediaItem | null {
   };
 }
 
+function parsePersonCredit(value: unknown): PersonCredit | null {
+  if (!isRecord(value)) return null;
+  const id = numberField(value, 'id');
+  const name = stringField(value, 'name');
+  if (id === undefined || !name) return null;
+  const character = stringField(value, 'character');
+  return {
+    id,
+    name,
+    ...(character === undefined ? {} : { character }),
+    profilePath: stringField(value, 'profilePath') ?? null,
+  };
+}
+
+function parseCast(value: unknown): PersonCredit[] {
+  if (!isRecord(value) || !Array.isArray(value.cast)) return [];
+  return value.cast.flatMap((item) => {
+    const parsed = parsePersonCredit(item);
+    return parsed ? [parsed] : [];
+  });
+}
+
+function parseCollectionSummary(value: unknown): CollectionSummary | undefined {
+  if (!isRecord(value)) return undefined;
+  const id = numberField(value, 'id');
+  const name = stringField(value, 'name');
+  if (id === undefined || !name) return undefined;
+  return {
+    id,
+    name,
+    posterPath: stringField(value, 'posterPath') ?? null,
+    backdropPath: stringField(value, 'backdropPath') ?? null,
+  };
+}
+
 export function parseResultsPage(value: unknown): ResultsPage<MediaItem> | null {
   if (!isRecord(value) || !Array.isArray(value.results)) return null;
   const pageInfo = isRecord(value.pageInfo) ? value.pageInfo : undefined;
@@ -202,6 +243,7 @@ export function parseMovie(value: unknown): MovieDetails | null {
   const releaseDate = stringField(value, 'releaseDate');
   const runtime = numberField(value, 'runtime');
   const mediaInfo = parseMediaInfo(value.mediaInfo);
+  const collection = parseCollectionSummary(value.belongsToCollection);
   return {
     id,
     title,
@@ -211,6 +253,8 @@ export function parseMovie(value: unknown): MovieDetails | null {
     ...(releaseDate === undefined ? {} : { releaseDate }),
     ...(runtime === undefined ? {} : { runtime }),
     ...(mediaInfo === undefined ? {} : { mediaInfo }),
+    cast: parseCast(value.credits),
+    ...(collection === undefined ? {} : { collection }),
   };
 }
 
@@ -237,7 +281,83 @@ export function parseTv(value: unknown): TvDetails | null {
     ...(firstAirDate === undefined ? {} : { firstAirDate }),
     seasons,
     ...(mediaInfo === undefined ? {} : { mediaInfo }),
+    cast: parseCast(value.credits),
   };
+}
+
+export function parseSeason(value: unknown): SeasonDetails | null {
+  if (!isRecord(value)) return null;
+  const id = numberField(value, 'id');
+  const name = stringField(value, 'name');
+  const seasonNumber = numberField(value, 'seasonNumber');
+  if (id === undefined || !name || seasonNumber === undefined) return null;
+  const overview = stringField(value, 'overview');
+  const episodes: EpisodeDetails[] = Array.isArray(value.episodes)
+    ? value.episodes.flatMap((episode) => {
+        if (!isRecord(episode)) return [];
+        const episodeId = numberField(episode, 'id');
+        const episodeName = stringField(episode, 'name');
+        const episodeNumber = numberField(episode, 'episodeNumber');
+        if (episodeId === undefined || !episodeName || episodeNumber === undefined) return [];
+        const airDate = stringField(episode, 'airDate');
+        const episodeOverview = stringField(episode, 'overview');
+        return [{
+          id: episodeId,
+          name: episodeName,
+          episodeNumber,
+          ...(airDate === undefined ? {} : { airDate }),
+          ...(episodeOverview === undefined ? {} : { overview: episodeOverview }),
+          stillPath: stringField(episode, 'stillPath') ?? null,
+        }];
+      })
+    : [];
+  return {
+    id,
+    name,
+    seasonNumber,
+    ...(overview === undefined ? {} : { overview }),
+    posterPath: stringField(value, 'posterPath') ?? null,
+    episodes,
+  };
+}
+
+export function parsePerson(value: unknown, creditsValue: unknown): PersonDetails | null {
+  if (!isRecord(value)) return null;
+  const id = numberField(value, 'id');
+  const name = stringField(value, 'name');
+  if (id === undefined || !name) return null;
+  const biography = stringField(value, 'biography');
+  const knownForDepartment = stringField(value, 'knownForDepartment');
+  const placeOfBirth = stringField(value, 'placeOfBirth');
+  const creditsRecord = isRecord(creditsValue) ? creditsValue : {};
+  const credits = [...(Array.isArray(creditsRecord.cast) ? creditsRecord.cast : []), ...(Array.isArray(creditsRecord.crew) ? creditsRecord.crew : [])]
+    .flatMap((item) => {
+      const parsed = parseMediaItem(item);
+      return parsed ? [parsed] : [];
+    })
+    .filter((item, index, items) => items.findIndex((other) => other.mediaType === item.mediaType && other.id === item.id) === index);
+  return {
+    id,
+    name,
+    ...(biography === undefined ? {} : { biography }),
+    ...(knownForDepartment === undefined ? {} : { knownForDepartment }),
+    ...(placeOfBirth === undefined ? {} : { placeOfBirth }),
+    profilePath: stringField(value, 'profilePath') ?? null,
+    credits,
+  };
+}
+
+export function parseCollection(value: unknown): CollectionDetails | null {
+  const summary = parseCollectionSummary(value);
+  if (!summary || !isRecord(value)) return null;
+  const overview = stringField(value, 'overview');
+  const parts = Array.isArray(value.parts)
+    ? value.parts.flatMap((item) => {
+        const parsed = parseMediaItem(item);
+        return parsed ? [parsed] : [];
+      })
+    : [];
+  return { ...summary, ...(overview === undefined ? {} : { overview }), parts };
 }
 
 function parseRequestedBy(value: unknown): MediaRequest['requestedBy'] {

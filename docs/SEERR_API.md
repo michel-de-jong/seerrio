@@ -67,8 +67,18 @@ This app uses Seerr's native accounts ("local users"): an email and a password s
 | `GET /discover/trending?page=` | Trending | Mixed movies, series and people |
 | `GET /discover/movies?page=` | Popular movies | |
 | `GET /discover/tv?page=` | Popular series | |
+| `GET /discover/movies/upcoming?page=` | Upcoming movies | |
+| `GET /discover/tv/upcoming?page=` | Upcoming series | |
 | `GET /movie/{tmdbId}` | Movie details | `mediaInfo` is absent until Seerr knows the title |
+| `GET /movie/{tmdbId}/recommendations?page=` | Recommended movies | |
+| `GET /movie/{tmdbId}/similar?page=` | Similar movies | |
 | `GET /tv/{tmdbId}` | Series details | TMDB `seasons[]`, plus `mediaInfo.seasons[]` with statuses |
+| `GET /tv/{tmdbId}/season/{seasonNumber}` | Season and episode details | Season zero is specials |
+| `GET /tv/{tmdbId}/recommendations?page=` | Recommended series | |
+| `GET /tv/{tmdbId}/similar?page=` | Similar series | |
+| `GET /person/{tmdbId}` | Person biography | |
+| `GET /person/{tmdbId}/combined_credits` | Movie and series credits | Loaded with the person biography |
+| `GET /collection/{tmdbId}` | Movie collection and parts | |
 | `POST /request` | Create a request | Body below |
 | `GET /request` | List requests | Query below; returns `pageInfo` and `results[]` |
 | `GET /request/count` | Counts per status | Managers' badge |

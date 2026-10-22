@@ -52,7 +52,19 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 | 6 | Polish and QA | code complete on the logic; screens not exercised on a device | not checked | not checked |
 | 7 | Release builds | EAS configuration complete; account linking, signing, builds, and store submission pending | not checked | not checked |
 
-`npm run typecheck`, `npm run lint`, and `npm test` (37 tests) pass. `npm run smoke` was not run.
+`npm run typecheck`, `npm run lint`, and `npm test` (50 tests) pass. `npm run smoke` was not run.
+
+### Mobile parity roadmap
+
+| Phase | Scope | Status |
+| --- | --- | --- |
+| 1 | Product rename, opt-in persistent sessions, auth hardening | code complete; PR #8 |
+| 2 | Rich discovery, people, collections, recommendations, seasons and episodes | code complete |
+| 3 | Request detail/edit/retry and issues | not started |
+| 4 | Personal settings, preferences, password and watch data | not started |
+| 5 | User administration | not started |
+| 6 | Practical server administration | not started |
+| 7 | Parity/security audit and store readiness | not started |
 
 ## Dependencies added
 
@@ -92,10 +104,11 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 * Nothing in this change has been opened in Expo Go. The phone checks below are still open.
 * No EAS project has been linked and no signed binary has been built. Run `npx eas-cli init`, then a preview build.
 * `npm` reports audit findings in the Expo dependency tree. They were left alone.
-* The browser preview stores the session cookie and optional API key in `localStorage`. Phones keep them in the platform keychain.
+* Browser preview sessions are memory-only. Opt-in persistent sessions use the platform keychain on phones.
 
 ## Log
 
+* 2026-10-22 · Rich discovery · Added upcoming movie/series feeds, cast and people pages, movie collections, recommendations, similar titles, and TV season/episode pages. Added defensive response parsing and tests. Typecheck, lint, and 50 tests pass. Verify each route and its loading, empty, error, offline, accessibility, and dark-mode state on both phones.
 * 2026-10-22 · Security foundation · Renamed the visible app to Seerr Mobile. Added opt-in native keychain persistence, memory-only default/browser sessions, origin-bound auth records, stale-response guards, HTTP risk confirmation, HTTPS-only API-key sign-in, restricted avatars, external-link confirmation, cookie deletion handling, and sanitized server messages.
 * 2026-10-22 · Sign-in · CSRF protection can stay on. The app stores `_csrf` and `XSRF-TOKEN`, sends `X-XSRF-TOKEN` on changes, and retries once after a CSRF rejection. Verify on the phone over HTTPS: connect, then sign in with a native Seerr account while Settings, Network, Enable CSRF Protection is on.
 

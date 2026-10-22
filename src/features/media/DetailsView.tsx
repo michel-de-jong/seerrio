@@ -1,16 +1,17 @@
 import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
 import * as Linking from 'expo-linking';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
-import type { MediaType, MovieDetails, TvDetails } from '@/api/types';
+import type { MediaType, MovieDetails, PersonCredit, TvDetails } from '@/api/types';
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { ErrorState } from '@/components/ErrorState';
+import { MediaStrip } from '@/components/MediaStrip';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { StatusBadge } from '@/components/StatusBadge';
-import { useMediaDetails } from '@/features/media/hooks';
+import { useMediaDetails, useRelatedMedia } from '@/features/media/hooks';
 import { usePublicSettings } from '@/features/server/hooks';
 import { en } from '@/i18n/en';
 import { mediaYear } from '@/lib/format';
@@ -28,6 +29,8 @@ type Props = {
 export function DetailsView({ mediaType, id }: Props) {
   const theme = useTheme();
   const query = useMediaDetails(mediaType, id);
+  const recommendations = useRelatedMedia(mediaType, id, 'recommendations');
+  const similar = useRelatedMedia(mediaType, id, 'similar');
   const settings = usePublicSettings();
   const { session } = useSession();
   const permissions = session.status === 'signedIn' ? session.user.permissions : 0;
@@ -116,7 +119,34 @@ export function DetailsView({ mediaType, id }: Props) {
             }
           />
         ) : null}
+        {mediaType === 'movie' && movieOf(query.data).collection ? (
+          <Button
+            label={en.media.viewCollection(movieOf(query.data).collection!.name)}
+            variant="secondary"
+            onPress={() =>
+              router.push({
+                pathname: '/collection/[id]',
+                params: { id: String(movieOf(query.data).collection!.id) },
+              })
+            }
+          />
+        ) : null}
+        <CastList cast={query.data.cast ?? []} />
         {mediaType === 'tv' ? <SeasonList show={tvOf(query.data)} /> : null}
+        <MediaStrip
+          title={en.media.recommendations}
+          items={recommendations.data?.pages.flatMap((page) => page.results) ?? []}
+          isLoading={recommendations.isLoading}
+          error={recommendations.error}
+          onRetry={() => void recommendations.refetch()}
+        />
+        <MediaStrip
+          title={en.media.similar}
+          items={similar.data?.pages.flatMap((page) => page.results) ?? []}
+          isLoading={similar.isLoading}
+          error={similar.error}
+          onRetry={() => void similar.refetch()}
+        />
       </View>
     </ScrollView>
   );
@@ -132,15 +162,68 @@ function SeasonList({ show }: { show: TvDetails }) {
         .map((season) => {
           const mediaSeason = show.mediaInfo?.seasons?.find((item) => item.seasonNumber === season.seasonNumber);
           return (
-            <View key={season.seasonNumber} style={{ gap: 4 }}>
+            <Pressable
+              key={season.seasonNumber}
+              accessibilityRole="button"
+              accessibilityLabel={en.media.openSeason(season.seasonNumber)}
+              onPress={() =>
+                router.push({
+                  pathname: '/tv/[id]/season/[season]',
+                  params: { id: String(show.id), season: String(season.seasonNumber) },
+                })
+              }
+              style={({ pressed }) => ({ gap: 4, opacity: pressed ? 0.7 : 1 })}
+            >
               <Text style={{ color: theme.colors.text, fontWeight: '600' }}>{en.media.seasonName(season.seasonNumber, season.name)}</Text>
               {season.episodeCount != null ? (
                 <Text style={{ color: theme.colors.muted }}>{en.media.episodes(season.episodeCount)}</Text>
               ) : null}
               {mediaSeason?.status != null ? <StatusBadge status={mediaDisplayStatus(mediaSeason.status)} /> : null}
-            </View>
+            </Pressable>
           );
         })}
+    </View>
+  );
+}
+
+function CastList({ cast }: { cast: PersonCredit[] }) {
+  const theme = useTheme();
+  if (cast.length === 0) return null;
+  return (
+    <View style={{ gap: theme.space.sm }}>
+      <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: theme.font.heading, fontWeight: '700' }}>
+        {en.media.cast}
+      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: theme.space.sm }}>
+        {cast.map((person) => {
+          const image = posterUrl(person.profilePath, 'w185');
+          return (
+            <Pressable
+              key={`${person.id}-${person.character ?? ''}`}
+              accessibilityRole="button"
+              accessibilityLabel={en.media.openPerson(person.name)}
+              onPress={() => router.push({ pathname: '/person/[id]', params: { id: String(person.id) } })}
+              style={({ pressed }) => ({ width: 96, gap: 4, opacity: pressed ? 0.7 : 1 })}
+            >
+              {image ? (
+                <Image
+                  source={{ uri: image }}
+                  style={{ width: 96, height: 120, borderRadius: theme.radius.md }}
+                  contentFit="cover"
+                />
+              ) : null}
+              <Text numberOfLines={2} style={{ color: theme.colors.text, fontWeight: '600' }}>
+                {person.name}
+              </Text>
+              {person.character ? (
+                <Text numberOfLines={2} style={{ color: theme.colors.muted, fontSize: theme.font.small }}>
+                  {person.character}
+                </Text>
+              ) : null}
+            </Pressable>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }

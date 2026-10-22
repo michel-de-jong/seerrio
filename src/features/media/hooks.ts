@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import type { MediaType, MovieDetails, TvDetails } from '../../api/types';
 import { useSeerrClient } from '../../auth/AuthProvider';
@@ -44,6 +44,61 @@ export function useMediaDetails(mediaType: MediaType | null, id: number | null) 
         default:
           return assertNever(mediaType);
       }
+    },
+  });
+}
+
+export function useRelatedMedia(
+  mediaType: MediaType,
+  id: number,
+  relation: 'recommendations' | 'similar',
+) {
+  const client = useSeerrClient();
+  return useInfiniteQuery({
+    queryKey: queryKeys.related(mediaType, id, relation),
+    enabled: client != null && Number.isSafeInteger(id) && id > 0,
+    initialPageParam: 1,
+    queryFn: ({ pageParam, signal }) => {
+      if (!client) throw new Error('Missing client');
+      return client.getRelated(mediaType, id, relation, pageParam, signal);
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
+  });
+}
+
+export function useSeason(tvId: number, seasonNumber: number) {
+  const client = useSeerrClient();
+  return useQuery({
+    queryKey: queryKeys.season(tvId, seasonNumber),
+    enabled: client != null && tvId > 0 && seasonNumber >= 0,
+    queryFn: ({ signal }) => {
+      if (!client) throw new Error('Missing client');
+      return client.getSeason(tvId, seasonNumber, signal);
+    },
+  });
+}
+
+export function usePerson(id: number) {
+  const client = useSeerrClient();
+  return useQuery({
+    queryKey: queryKeys.person(id),
+    enabled: client != null && id > 0,
+    queryFn: ({ signal }) => {
+      if (!client) throw new Error('Missing client');
+      return client.getPerson(id, signal);
+    },
+  });
+}
+
+export function useCollection(id: number) {
+  const client = useSeerrClient();
+  return useQuery({
+    queryKey: queryKeys.collection(id),
+    enabled: client != null && id > 0,
+    queryFn: ({ signal }) => {
+      if (!client) throw new Error('Missing client');
+      return client.getCollection(id, signal);
     },
   });
 }

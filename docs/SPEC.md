@@ -9,14 +9,15 @@ Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebas
 * Save a server URL and check `GET /status` and `GET /settings/public`.
 * Sign in with `POST /auth/local`, then `GET /auth/me`. Optional API key under Advanced.
 * Forgot password only when `emailEnabled` is true.
-* Discover trending, movies, and series. Search. Movie and series details by TMDB id.
+* Discover trending, popular and upcoming movies and series. Search. Rich movie and series details by TMDB id.
+* Browse cast, people and their combined credits, movie collections, recommendations, similar titles, and TV season/episode details.
 * Request a movie, or explicit TV seasons. Optional 4K when the server and the user allow it.
 * List requests, and let a manager approve or decline. The requester can remove a pending request; a manager can remove any request.
 * Profile with quota, server, and sign out.
 
 ## Out of scope
 
-Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User management. Issue reports. Push notifications. Analytics. Languages other than English. Store listing content and submission.
+Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push notifications until Seerr exposes a suitable mobile registration flow. Analytics. Languages other than English. Store submission.
 
 ## Connect
 
@@ -48,7 +49,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 
 ## Discover and search
 
-* Discover has Trending, Movies, and Series. Search is debounced. Both paginate.
+* Discover has Trending, Movies, Series, Upcoming movies, and Upcoming series. Search is debounced. All feeds paginate.
 * Show only `movie` and `tv`. Posters use `w185`. Details use `w342` posters and `w780` backdrops.
 * Each card shows the title, year, and a status badge when Seerr already knows the title.
 * Empty, error with retry, and offline states are visible. Cached rows stay on screen while offline.
@@ -57,6 +58,9 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 
 * Routes use the TMDB id.
 * Show title, year, overview, poster, backdrop, and status badges for HD and 4K when those values exist.
+* Show cast with links to person pages, movie collection links, recommendations, and similar titles.
+* Person pages show biography and combined movie/series credits. Collection pages show their titles.
+* TV seasons open a season page with episode names, air dates, stills, and overviews.
 * A movie or season is requestable when its status is missing, unknown, or deleted. Pending, processing, partially available, available, blocklisted, and any unrecognized number are not requestable.
 * Season 0 stays hidden until the user asks for specials.
 * A season is also blocked when it is listed on a pending or approved request for the selected quality.

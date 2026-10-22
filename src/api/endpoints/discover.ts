@@ -12,6 +12,10 @@ export function discoverPath(feed: DiscoverFeed): string {
       return '/discover/movies';
     case 'tv':
       return '/discover/tv';
+    case 'upcomingMovies':
+      return '/discover/movies/upcoming';
+    case 'upcomingTv':
+      return '/discover/tv/upcoming';
     default:
       return assertNever(feed);
   }

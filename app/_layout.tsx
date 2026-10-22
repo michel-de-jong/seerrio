@@ -98,6 +98,9 @@ function RootNavigator() {
         <Stack.Screen name="forgot-password" options={{ title: en.forgotPassword.title }} />
         <Stack.Screen name="movie/[id]" options={{ title: en.media.movie }} />
         <Stack.Screen name="tv/[id]" options={{ title: en.media.series }} />
+        <Stack.Screen name="tv/[id]/season/[season]" options={{ title: en.media.season }} />
+        <Stack.Screen name="person/[id]" options={{ title: en.media.person }} />
+        <Stack.Screen name="collection/[id]" options={{ title: en.media.collection }} />
         <Stack.Screen name="request/[type]/[id]" options={{ presentation: 'modal', title: en.request.title }} />
       </Stack>
     </>
