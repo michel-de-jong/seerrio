@@ -120,7 +120,11 @@ function RequestForm({ mediaType, id }: { mediaType: MediaType; id: number }) {
           {!settings.data.partialRequestsEnabled ? (
             <Text style={{ color: theme.colors.muted }}>{en.request.partialLocked}</Text>
           ) : null}
-          <Pressable accessibilityRole="button" onPress={() => setShowSpecials((value) => !value)}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showSpecials }}
+            onPress={() => setShowSpecials((value) => !value)}
+          >
             <Text style={{ color: theme.colors.accent, fontWeight: '600' }}>
               {showSpecials ? en.actions.hideSpecials : en.actions.showSpecials}
             </Text>

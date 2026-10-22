@@ -133,3 +133,11 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 ## Every screen
 
 Loading, empty, error with retry, and offline. Labels for controls. Light and dark mode from the system theme. Status colors come from `src/lib/status.ts`. Permission checks come from `src/lib/permissions.ts`. Copy comes from `src/i18n/en.ts`.
+
+## Release acceptance
+
+* `npm run release:check`, typecheck, lint, tests, Expo dependency checks, and native bundle exports pass from a clean checkout.
+* Expo Doctor has no project-configuration failures. Local native-tooling failures are blockers only for builds performed on that machine; EAS still requires successful signed preview builds.
+* The endpoint inventory, deliberate exclusions, deferred endpoints, store gates, and complete physical-device pass are maintained in `docs/RELEASE_CHECKLIST.md`.
+* No release ships with tracked secrets or signing files, runtime credential logging, authenticated image disk caching, or inbound link configuration that bypasses session route protection.
+* Store submission requires signed preview builds and the full iPhone and Android acceptance pass. Local JavaScript bundle generation is not a substitute for installing those binaries.

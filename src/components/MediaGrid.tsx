@@ -6,6 +6,7 @@ import type { MediaItem, MediaType } from '../api/types';
 import { assertNever } from '../api/assertNever';
 import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
+import { OfflineBanner } from './OfflineBanner';
 import { PosterCard } from './PosterCard';
 import { Skeleton } from './Skeleton';
 import { useTheme } from '../theme/useTheme';
@@ -30,6 +31,7 @@ export function MediaGrid({ items, isLoading, isRefreshing, error, empty, header
   if (isLoading && items.length === 0) {
     return (
       <View style={{ padding: theme.space.md, gap: theme.space.md }}>
+        <OfflineBanner />
         {header}
         <View style={{ flexDirection: 'row', gap: theme.space.sm }}>
           <Skeleton width={itemWidth} height={itemWidth * 1.5} />
@@ -42,6 +44,7 @@ export function MediaGrid({ items, isLoading, isRefreshing, error, empty, header
   if (error && items.length === 0) {
     return (
       <View style={{ flex: 1 }}>
+        <OfflineBanner />
         {header}
         <ErrorState error={error} onRetry={onRetry} />
       </View>
@@ -57,7 +60,12 @@ export function MediaGrid({ items, isLoading, isRefreshing, error, empty, header
       onRefresh={onRefresh}
       onEndReached={onEndReached}
       onEndReachedThreshold={0.4}
-      ListHeaderComponent={header ? <View style={{ marginBottom: theme.space.md }}>{header}</View> : undefined}
+      ListHeaderComponent={
+        <>
+          <OfflineBanner />
+          {header ? <View style={{ marginBottom: theme.space.md }}>{header}</View> : null}
+        </>
+      }
       ListEmptyComponent={<EmptyState message={empty} />}
       columnWrapperStyle={items.length > 0 ? { gap: theme.space.sm } : undefined}
       contentContainerStyle={{ padding: theme.space.md, gap: theme.space.md, flexGrow: 1 }}
