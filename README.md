@@ -53,11 +53,10 @@ The iOS bundle identifier and Android package are `io.seerrmobile.app`. The app 
 
 ## Native builds
 
-[EAS Build](https://docs.expo.dev/build/introduction/) produces signed iOS and Android binaries. Expo is the build framework. Neither Expo Go nor an Expo proxy is part of the installed app.
+[EAS Build](https://docs.expo.dev/build/introduction/) produces signed iOS and Android binaries. Expo is the build framework. Neither Expo Go nor an Expo proxy is part of the installed app. The public EAS project ID is already set in `app.config.ts`.
 
 ```bash
 npx eas-cli login
-npx eas-cli init
 npx eas-cli build --platform all --profile preview
 npx eas-cli build --platform all --profile production
 npx eas-cli submit --platform all --profile production

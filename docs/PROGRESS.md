@@ -34,7 +34,7 @@ The current automated checks are typecheck, lint, the unit tests, and `npm run r
 
 ## Before store submission
 
-* Link EAS with `npx eas-cli init` and review the generated project association before the first remote build.
+* EAS project `2f4abe91-0206-4d2f-bb1e-dfb19b5e3775` is linked. Create the signed preview build before the first store upload.
 * Install a signed preview build on a physical iPhone and Android phone, then complete the device checklist.
 * Publish `docs/PRIVACY.md` at a public URL for both store listings. General contact is GitHub Issues.
 * Prepare a public HTTPS demo server and a non-admin demo account for store review.
@@ -75,6 +75,7 @@ Local iOS and Android compilation also needs a full Xcode installation, CocoaPod
 
 ## Changelog
 
+* 2026-10-22 · EAS project link · Added the public EAS project ID to `app.config.ts`. Dynamic config cannot be edited by `eas init`, so the ID has to be committed by hand. Signing credentials remain outside git.
 * 2026-10-22 · Public documentation · Rewrote the public project documents for release: current status, privacy contact through GitHub Issues, accurate icon licensing, and removal of stale development notes.
 * 2026-10-22 · Store preparation · Set the permanent app id to `io.seerrmobile.app`, limited native support to phones, declared exempt encryption, and added Play artwork and the privacy policy.
 * 2026-10-22 · App icon and splash · Replaced the template icon with original artwork and added a dark launch screen.
