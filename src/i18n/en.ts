@@ -98,6 +98,8 @@ export const en = {
     series: 'Series',
     upcomingMovies: 'Upcoming movies',
     upcomingSeries: 'Upcoming series',
+    browse: 'Browse',
+    categoryEmpty: 'No titles match this category.',
     empty: 'Nothing to show here yet.',
   },
   search: {
@@ -126,6 +128,8 @@ export const en = {
     similar: 'Similar titles',
     collectionTitles: 'Titles in this collection',
     viewCollection: (name: string) => `View ${name}`,
+    language: (code: string) => `Language: ${code.toUpperCase()}`,
+    browseBy: (label: string) => `Browse ${label}`,
     noRelated: 'No titles to show.',
     noCredits: 'No movie or series credits to show.',
     noEpisodes: 'No episodes to show.',

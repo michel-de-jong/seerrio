@@ -3,7 +3,7 @@ import { router, Stack } from 'expo-router';
 import * as Linking from 'expo-linking';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 
-import type { MediaType, MovieDetails, PersonCredit, TvDetails } from '@/api/types';
+import type { MediaType, MovieDetails, NamedEntity, PersonCredit, TvDetails } from '@/api/types';
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { ErrorState } from '@/components/ErrorState';
@@ -96,6 +96,7 @@ export function DetailsView({ mediaType, id }: Props) {
         {query.data.overview ? (
           <Text style={{ color: theme.colors.text, fontSize: theme.font.body, lineHeight: 22 }}>{query.data.overview}</Text>
         ) : null}
+        <BrowseLinks mediaType={mediaType} details={query.data} />
         {standard || ultra ? (
           <Button
             label={standard ? en.actions.request : en.actions.request4k}
@@ -150,6 +151,59 @@ export function DetailsView({ mediaType, id }: Props) {
       </View>
     </ScrollView>
   );
+}
+
+function BrowseLinks({
+  mediaType,
+  details,
+}: {
+  mediaType: MediaType;
+  details: MovieDetails | TvDetails;
+}) {
+  const theme = useTheme();
+  const movie = mediaType === 'movie' ? movieOf(details) : null;
+  const tv = mediaType === 'tv' ? tvOf(details) : null;
+  const links: { category: 'genre' | 'language' | 'studio' | 'network'; value: string; label: string }[] = [
+    ...(details.genres ?? []).map((genre) => categoryLink('genre', genre)),
+    ...(movie?.productionCompanies ?? []).map((studio) => categoryLink('studio', studio)),
+    ...(tv?.networks ?? []).map((network) => categoryLink('network', network)),
+    ...(details.originalLanguage
+      ? [{ category: 'language' as const, value: details.originalLanguage, label: en.media.language(details.originalLanguage) }]
+      : []),
+  ];
+  if (links.length === 0) return null;
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm }}>
+      {links.map((link) => (
+        <Pressable
+          key={`${link.category}-${link.value}`}
+          accessibilityRole="button"
+          accessibilityLabel={en.media.browseBy(link.label)}
+          onPress={() =>
+            router.push({
+              pathname: '/discover/[type]/[category]/[value]',
+              params: { type: mediaType, category: link.category, value: link.value, title: link.label },
+            })
+          }
+          style={({ pressed }) => ({
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.radius.lg,
+            paddingHorizontal: 12,
+            paddingVertical: 7,
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <Text style={{ color: theme.colors.text }}>{link.label}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+function categoryLink(category: 'genre' | 'studio' | 'network', item: NamedEntity) {
+  return { category, value: String(item.id), label: item.name };
 }
 
 function SeasonList({ show }: { show: TvDetails }) {

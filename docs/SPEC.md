@@ -10,7 +10,7 @@ Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebas
 * Sign in with `POST /auth/local`, then `GET /auth/me`. Optional API key under Advanced.
 * Forgot password only when `emailEnabled` is true.
 * Discover trending, popular and upcoming movies and series. Search. Rich movie and series details by TMDB id.
-* Browse cast, people and their combined credits, movie collections, recommendations, similar titles, and TV season/episode details.
+* Browse cast, people and their combined credits, movie collections, recommendations, similar titles, genres, original languages, studios, networks, and TV season/episode details.
 * Request a movie, or explicit TV seasons. Optional 4K when the server and the user allow it.
 * List requests, and let a manager approve or decline. The requester can remove a pending request; a manager can remove any request.
 * Profile with quota, server, and sign out.
@@ -59,6 +59,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 * Routes use the TMDB id.
 * Show title, year, overview, poster, backdrop, and status badges for HD and 4K when those values exist.
 * Show cast with links to person pages, movie collection links, recommendations, and similar titles.
+* Genres and original languages open filtered movie or series lists. Movie studios and TV networks open their matching filtered lists.
 * Person pages show biography and combined movie/series credits. Collection pages show their titles.
 * TV seasons open a season page with episode names, air dates, stills, and overviews.
 * A movie or season is requestable when its status is missing, unknown, or deleted. Pending, processing, partially available, available, blocklisted, and any unrecognized number are not requestable.

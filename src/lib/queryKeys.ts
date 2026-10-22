@@ -4,6 +4,8 @@ export const queryKeys = {
   publicSettings: (serverUrl: string) => ['public-settings', serverUrl] as const,
   status: (serverUrl: string) => ['server-status', serverUrl] as const,
   discover: (feed: DiscoverFeed) => ['discover', feed] as const,
+  discoverCategory: (mediaType: 'movie' | 'tv', category: string, value: string) =>
+    ['discover', mediaType, category, value] as const,
   search: (query: string) => ['search', query] as const,
   movie: (id: number) => ['movie', id] as const,
   tv: (id: number) => ['tv', id] as const,

@@ -9,6 +9,7 @@ import type {
   MediaRequestSummary,
   MediaType,
   MovieDetails,
+  NamedEntity,
   PersonCredit,
   PersonDetails,
   PublicSettings,
@@ -160,6 +161,16 @@ function parseCollectionSummary(value: unknown): CollectionSummary | undefined {
   };
 }
 
+function parseNamedEntities(value: unknown): NamedEntity[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!isRecord(item)) return [];
+    const id = numberField(item, 'id');
+    const name = stringField(item, 'name');
+    return id === undefined || !name ? [] : [{ id, name }];
+  });
+}
+
 export function parseResultsPage(value: unknown): ResultsPage<MediaItem> | null {
   if (!isRecord(value) || !Array.isArray(value.results)) return null;
   const pageInfo = isRecord(value.pageInfo) ? value.pageInfo : undefined;
@@ -244,6 +255,7 @@ export function parseMovie(value: unknown): MovieDetails | null {
   const runtime = numberField(value, 'runtime');
   const mediaInfo = parseMediaInfo(value.mediaInfo);
   const collection = parseCollectionSummary(value.belongsToCollection);
+  const originalLanguage = stringField(value, 'originalLanguage');
   return {
     id,
     title,
@@ -255,6 +267,9 @@ export function parseMovie(value: unknown): MovieDetails | null {
     ...(mediaInfo === undefined ? {} : { mediaInfo }),
     cast: parseCast(value.credits),
     ...(collection === undefined ? {} : { collection }),
+    genres: parseNamedEntities(value.genres),
+    productionCompanies: parseNamedEntities(value.productionCompanies),
+    ...(originalLanguage === undefined ? {} : { originalLanguage }),
   };
 }
 
@@ -266,6 +281,7 @@ export function parseTv(value: unknown): TvDetails | null {
   const overview = stringField(value, 'overview');
   const firstAirDate = stringField(value, 'firstAirDate');
   const mediaInfo = parseMediaInfo(value.mediaInfo);
+  const originalLanguage = stringField(value, 'originalLanguage');
   const seasons = Array.isArray(value.seasons)
     ? value.seasons.flatMap((season) => {
         const parsed = parseTvSeason(season);
@@ -282,6 +298,9 @@ export function parseTv(value: unknown): TvDetails | null {
     seasons,
     ...(mediaInfo === undefined ? {} : { mediaInfo }),
     cast: parseCast(value.credits),
+    genres: parseNamedEntities(value.genres),
+    networks: parseNamedEntities(value.networks),
+    ...(originalLanguage === undefined ? {} : { originalLanguage }),
   };
 }
 

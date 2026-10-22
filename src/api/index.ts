@@ -1,6 +1,6 @@
 import { createRequest, type SeerrClientOptions } from './client';
 import { getMe, logout, resetPassword, signIn } from './endpoints/auth';
-import { discover } from './endpoints/discover';
+import { discover, discoverCategory, type DiscoverCategory } from './endpoints/discover';
 import { getCollection, getMovie, getPerson, getRelated, getSeason, getTv } from './endpoints/media';
 import {
   approveRequest,
@@ -27,6 +27,13 @@ export function createSeerrClient(options: SeerrClientOptions) {
     resetPassword: (email: string) => resetPassword(request, email),
     search: (query: string, page: number, signal?: AbortSignal) => search(request, query, page, signal),
     discover: (feed: DiscoverFeed, page: number, signal?: AbortSignal) => discover(request, feed, page, signal),
+    discoverCategory: (
+      mediaType: 'movie' | 'tv',
+      category: DiscoverCategory,
+      value: string,
+      page: number,
+      signal?: AbortSignal,
+    ) => discoverCategory(request, mediaType, category, value, page, signal),
     getMovie: (id: number, signal?: AbortSignal) => getMovie(request, id, signal),
     getTv: (id: number, signal?: AbortSignal) => getTv(request, id, signal),
     getRelated: (

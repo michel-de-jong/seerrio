@@ -101,6 +101,7 @@ function RootNavigator() {
         <Stack.Screen name="tv/[id]/season/[season]" options={{ title: en.media.season }} />
         <Stack.Screen name="person/[id]" options={{ title: en.media.person }} />
         <Stack.Screen name="collection/[id]" options={{ title: en.media.collection }} />
+        <Stack.Screen name="discover/[type]/[category]/[value]" options={{ title: en.discover.browse }} />
         <Stack.Screen name="request/[type]/[id]" options={{ presentation: 'modal', title: en.request.title }} />
       </Stack>
     </>

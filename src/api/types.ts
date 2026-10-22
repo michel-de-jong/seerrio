@@ -113,6 +113,9 @@ export type MovieDetails = {
   mediaInfo?: MediaInfo;
   cast?: PersonCredit[];
   collection?: CollectionSummary;
+  genres?: NamedEntity[];
+  productionCompanies?: NamedEntity[];
+  originalLanguage?: string;
 };
 
 export type TvDetails = {
@@ -125,6 +128,14 @@ export type TvDetails = {
   seasons: TvSeason[];
   mediaInfo?: MediaInfo;
   cast?: PersonCredit[];
+  genres?: NamedEntity[];
+  networks?: NamedEntity[];
+  originalLanguage?: string;
+};
+
+export type NamedEntity = {
+  id: number;
+  name: string;
 };
 
 export type EpisodeDetails = {

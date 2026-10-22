@@ -69,6 +69,12 @@ This app uses Seerr's native accounts ("local users"): an email and a password s
 | `GET /discover/tv?page=` | Popular series | |
 | `GET /discover/movies/upcoming?page=` | Upcoming movies | |
 | `GET /discover/tv/upcoming?page=` | Upcoming series | |
+| `GET /discover/movies/genre/{genreId}?page=` | Movies by genre | |
+| `GET /discover/tv/genre/{genreId}?page=` | Series by genre | |
+| `GET /discover/movies/language/{code}?page=` | Movies by original language | ISO 639 code |
+| `GET /discover/tv/language/{code}?page=` | Series by original language | ISO 639 code |
+| `GET /discover/movies/studio/{studioId}?page=` | Movies by studio | |
+| `GET /discover/tv/network/{networkId}?page=` | Series by network | |
 | `GET /movie/{tmdbId}` | Movie details | `mediaInfo` is absent until Seerr knows the title |
 | `GET /movie/{tmdbId}/recommendations?page=` | Recommended movies | |
 | `GET /movie/{tmdbId}/similar?page=` | Similar movies | |
