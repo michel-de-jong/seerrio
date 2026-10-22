@@ -8,16 +8,17 @@ const config: ExpoConfig = {
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
   ios: {
-    supportsTablet: true,
-    bundleIdentifier: 'io.seerrlite.app',
+    supportsTablet: false,
+    bundleIdentifier: 'io.seerrmobile.app',
     infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
       NSAppTransportSecurity: {
         NSAllowsArbitraryLoads: true,
       },
     },
   },
   android: {
-    package: 'io.seerrlite.app',
+    package: 'io.seerrmobile.app',
     predictiveBackGestureEnabled: false,
     adaptiveIcon: {
       backgroundColor: '#1E1B4B',

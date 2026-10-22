@@ -1,4 +1,4 @@
-"""Render the Seerr Mobile app icons into assets/.
+"""Render the Seerr Mobile app icons into assets/ and store artwork into store/.
 
 Run with: python3 scripts/generate-icons.py (needs Pillow).
 """
@@ -9,7 +9,9 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 SIZE = 1024
 SCALE = 4
-ASSETS = Path(__file__).resolve().parent.parent / "assets"
+ROOT = Path(__file__).resolve().parent.parent
+ASSETS = ROOT / "assets"
+STORE = ROOT / "store"
 
 BG_TOP = (49, 46, 129)
 BG_BOTTOM = (17, 24, 39)
@@ -131,6 +133,16 @@ def render(build, out_size):
     return build(SIZE * SCALE).resize((out_size, out_size), Image.LANCZOS)
 
 
+def feature_graphic():
+    """Google Play feature graphic: 1024x500, glyph centred on the brand gradient."""
+    width, height = 1024 * SCALE, 500 * SCALE
+    canvas = background(width).crop((0, (width - height) // 2, width, (width + height) // 2))
+    glyph_size = round(height * 1.25)
+    glyph = foreground(glyph_size, 1.0)
+    canvas.alpha_composite(glyph, ((width - glyph_size) // 2, (height - glyph_size) // 2))
+    return canvas.resize((1024, 500), Image.LANCZOS).convert("RGB")
+
+
 def main():
     full = render(lambda s: Image.alpha_composite(background(s), foreground(s, 1.0)), SIZE)
     full.convert("RGB").save(ASSETS / "icon.png", optimize=True)
@@ -141,6 +153,10 @@ def main():
     render(background, SIZE).convert("RGB").save(ASSETS / "android-icon-background.png", optimize=True)
     render(lambda s: monochrome(s, 0.78), SIZE).save(ASSETS / "android-icon-monochrome.png", optimize=True)
     render(lambda s: foreground(s, 1.0), SIZE).save(ASSETS / "splash-icon.png", optimize=True)
+
+    STORE.mkdir(exist_ok=True)
+    full.resize((512, 512), Image.LANCZOS).convert("RGB").save(STORE / "play-icon-512.png", optimize=True)
+    feature_graphic().save(STORE / "play-feature-graphic.png", optimize=True)
 
 
 if __name__ == "__main__":
