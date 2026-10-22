@@ -30,6 +30,7 @@ import type {
   TvDetails,
   TvSeason,
   UserMainSettings,
+  UserList,
   WatchData,
 } from './types';
 
@@ -632,6 +633,19 @@ export function parseWatchData(value: unknown): WatchData | null {
       })
     : [];
   return { playCount, recentlyWatched };
+}
+
+export function parseUserList(value: unknown): UserList | null {
+  if (!isRecord(value) || !Array.isArray(value.results)) return null;
+  const pageInfo = isRecord(value.pageInfo) ? value.pageInfo : {};
+  return {
+    page: numberField(pageInfo, 'page') ?? 1,
+    pages: numberField(pageInfo, 'pages') ?? 1,
+    results: value.results.flatMap((item) => {
+      const parsed = parseUser(item);
+      return parsed ? [parsed] : [];
+    }),
+  };
 }
 
 export function parseRequestList(value: unknown): RequestList | null {

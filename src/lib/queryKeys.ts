@@ -28,4 +28,8 @@ export const queryKeys = {
   userNotifications: (userId: number) => ['user-settings', userId, 'notifications'] as const,
   passwordStatus: (userId: number) => ['user-settings', userId, 'password'] as const,
   watchData: (userId: number) => ['user', userId, 'watch-data'] as const,
+  users: (query: string) => ['users', query] as const,
+  usersAll: ['users'] as const,
+  user: (userId: number) => ['user', userId] as const,
+  userPermissions: (userId: number) => ['user', userId, 'permissions'] as const,
 };

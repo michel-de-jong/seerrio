@@ -5,6 +5,7 @@ import {
   parsePerson,
   parseSeason,
   parseUserMainSettings,
+  parseUserList,
   parseWatchData,
 } from './parse';
 
@@ -113,5 +114,21 @@ describe('rich media parsers', () => {
         ],
       }),
     ).toEqual({ playCount: 3, recentlyWatched: [{ id: 1, tmdbId: 2, mediaType: 'movie' }] });
+  });
+
+  it('parses paginated users and skips unsafe records', () => {
+    expect(
+      parseUserList({
+        pageInfo: { page: 1, pages: 2 },
+        results: [
+          { id: 1, email: 'user@example.test', permissions: 2 },
+          { id: 'invalid', email: 'bad@example.test', permissions: 0 },
+        ],
+      }),
+    ).toEqual({
+      page: 1,
+      pages: 2,
+      results: [{ id: 1, email: 'user@example.test', permissions: 2 }],
+    });
   });
 });

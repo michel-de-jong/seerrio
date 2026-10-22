@@ -110,6 +110,16 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 * Watch data shows the server play count and recently watched titles. It is read-only.
 * TanStack Query data is cleared whenever the server or signed-in user changes, including sign-out.
 
+## User administration
+
+* Only MANAGE_USERS or ADMIN can open user administration.
+* Managers can search and page through users, inspect a user, create native users with an explicit password, edit display name/email and quota overrides, set a replacement password, and delete non-protected users.
+* Passwords are never persisted, logged, or included in cache data. New and replacement passwords require 8 characters and matching confirmation.
+* The primary owner cannot be deleted or have permissions changed. Managers cannot change their own permissions or delete themselves.
+* Permission controls cover every Seerr permission known to this server version. Non-admin managers can only toggle permissions they hold; the server remains authoritative.
+* Batch permission updates exclude the primary owner and current manager, replace the complete permission mask, show a warning, and require confirmation.
+* Plex/Jellyfin/Emby imports and linked-account administration remain out of scope.
+
 ## Every screen
 
 Loading, empty, error with retry, and offline. Labels for controls. Light and dark mode from the system theme. Status colors come from `src/lib/status.ts`. Permission checks come from `src/lib/permissions.ts`. Copy comes from `src/i18n/en.ts`.

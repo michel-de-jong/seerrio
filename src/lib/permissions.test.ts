@@ -6,6 +6,7 @@ import {
   canRequestTv,
   canViewIssues,
   hasPermission,
+  togglePermission,
 } from './permissions';
 
 describe('permissions', () => {
@@ -28,5 +29,13 @@ describe('permissions', () => {
     expect(canManageIssues(Permission.CREATE_ISSUES)).toBe(false);
     expect(canViewIssues(Permission.VIEW_ISSUES)).toBe(true);
     expect(canCreateIssues(Permission.VIEW_ISSUES)).toBe(false);
+  });
+
+  it('changes one permission without disturbing the others', () => {
+    const initial = Permission.REQUEST_MOVIE | Permission.CREATE_ISSUES;
+    expect(togglePermission(initial, Permission.REQUEST_TV, true)).toBe(
+      Permission.REQUEST_MOVIE | Permission.CREATE_ISSUES | Permission.REQUEST_TV,
+    );
+    expect(togglePermission(initial, Permission.REQUEST_MOVIE, false)).toBe(Permission.CREATE_ISSUES);
   });
 });

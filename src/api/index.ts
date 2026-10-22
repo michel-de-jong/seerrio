@@ -28,17 +28,25 @@ import { search } from './endpoints/search';
 import { getPublicSettings, getStatus } from './endpoints/settings';
 import {
   changePassword,
+  batchUpdateUserPermissions,
+  createUser,
+  deleteUser,
   getNotificationSettings,
   getPasswordStatus,
   getQuota,
   getUserMainSettings,
+  getUser,
+  getUserPermissions,
   getWatchData,
   updateNotificationSettings,
   updateUserMainSettings,
+  updateUserPermissions,
+  listUsers,
 } from './endpoints/users';
 import type {
   CreateIssueBody,
   CreateRequestBody,
+  CreateUserBody,
   DiscoverFeed,
   IssueFilter,
   ListRequestsQuery,
@@ -110,6 +118,16 @@ export function createSeerrClient(options: SeerrClientOptions) {
     changePassword: (userId: number, currentPassword: string | undefined, newPassword: string) =>
       changePassword(request, userId, currentPassword, newPassword),
     getWatchData: (userId: number, signal?: AbortSignal) => getWatchData(request, userId, signal),
+    listUsers: (take: number, skip: number, query: string, signal?: AbortSignal) =>
+      listUsers(request, take, skip, query, signal),
+    getUser: (userId: number, signal?: AbortSignal) => getUser(request, userId, signal),
+    createUser: (body: CreateUserBody) => createUser(request, body),
+    deleteUser: (userId: number) => deleteUser(request, userId),
+    getUserPermissions: (userId: number, signal?: AbortSignal) => getUserPermissions(request, userId, signal),
+    updateUserPermissions: (userId: number, permissions: number) =>
+      updateUserPermissions(request, userId, permissions),
+    batchUpdateUserPermissions: (ids: number[], permissions: number) =>
+      batchUpdateUserPermissions(request, ids, permissions),
   };
 }
 

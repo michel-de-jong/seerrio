@@ -125,6 +125,10 @@ function RootNavigator() {
         <Stack.Screen name="profile/notifications" options={{ title: en.profile.notifications }} />
         <Stack.Screen name="profile/password" options={{ title: en.profile.password }} />
         <Stack.Screen name="profile/watch-data" options={{ title: en.profile.watchHistory }} />
+        <Stack.Screen name="admin/users/index" options={{ title: en.profile.userAdministration }} />
+        <Stack.Screen name="admin/users/create" options={{ title: en.userAdmin.create }} />
+        <Stack.Screen name="admin/users/[id]" options={{ title: en.userAdmin.detail }} />
+        <Stack.Screen name="admin/users/batch" options={{ title: en.userAdmin.batchTitle }} />
       </Stack>
     </>
   );

@@ -356,3 +356,15 @@ export type WatchData = {
     mediaType: MediaType;
   }[];
 };
+
+export type UserList = {
+  page: number;
+  pages: number;
+  results: SeerrUser[];
+};
+
+export type CreateUserBody = {
+  email: string;
+  username?: string;
+  password: string;
+};

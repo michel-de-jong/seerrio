@@ -1,7 +1,23 @@
 import type { SeerrRequest } from '../client';
 import { unexpectedResponse } from '../errors';
-import { isRecord, parseNotificationSettings, parseQuota, parseUserMainSettings, parseWatchData } from '../parse';
-import type { NotificationSettings, Quota, UserMainSettings, WatchData } from '../types';
+import {
+  isRecord,
+  parseNotificationSettings,
+  parseQuota,
+  parseUser,
+  parseUserList,
+  parseUserMainSettings,
+  parseWatchData,
+} from '../parse';
+import type {
+  CreateUserBody,
+  NotificationSettings,
+  Quota,
+  SeerrUser,
+  UserList,
+  UserMainSettings,
+  WatchData,
+} from '../types';
 
 export async function getQuota(request: SeerrRequest, userId: number, signal?: AbortSignal): Promise<Quota> {
   if (!Number.isSafeInteger(userId) || userId <= 0) throw unexpectedResponse('/user/quota');
@@ -98,4 +114,72 @@ export async function getWatchData(
   const parsed = parseWatchData(body);
   if (!parsed) throw unexpectedResponse(path);
   return parsed;
+}
+
+export async function listUsers(
+  request: SeerrRequest,
+  take: number,
+  skip: number,
+  query: string,
+  signal?: AbortSignal,
+): Promise<UserList> {
+  const body = await request<unknown>('/user', {
+    query: { take, skip, sort: 'displayname', sortDirection: 'asc', q: query || undefined },
+    signal,
+  });
+  const parsed = parseUserList(body);
+  if (!parsed) throw unexpectedResponse('/user');
+  return parsed;
+}
+
+export async function getUser(request: SeerrRequest, userId: number, signal?: AbortSignal): Promise<SeerrUser> {
+  const path = userPath(userId, '');
+  const body = await request<unknown>(path, { signal });
+  const parsed = parseUser(body);
+  if (!parsed) throw unexpectedResponse(path);
+  return parsed;
+}
+
+export async function createUser(request: SeerrRequest, body: CreateUserBody): Promise<SeerrUser> {
+  const response = await request<unknown>('/user', { method: 'POST', body });
+  const parsed = parseUser(response);
+  if (!parsed) throw unexpectedResponse('/user');
+  return parsed;
+}
+
+export async function deleteUser(request: SeerrRequest, userId: number): Promise<void> {
+  await request<unknown>(userPath(userId, ''), { method: 'DELETE' });
+}
+
+export async function getUserPermissions(
+  request: SeerrRequest,
+  userId: number,
+  signal?: AbortSignal,
+): Promise<number> {
+  const path = userPath(userId, '/settings/permissions');
+  const body = await request<unknown>(path, { signal });
+  if (!isRecord(body) || typeof body.permissions !== 'number') throw unexpectedResponse(path);
+  return body.permissions;
+}
+
+export async function updateUserPermissions(
+  request: SeerrRequest,
+  userId: number,
+  permissions: number,
+): Promise<number> {
+  const path = userPath(userId, '/settings/permissions');
+  const body = await request<unknown>(path, { method: 'POST', body: { permissions } });
+  if (!isRecord(body) || typeof body.permissions !== 'number') throw unexpectedResponse(path);
+  return body.permissions;
+}
+
+export async function batchUpdateUserPermissions(
+  request: SeerrRequest,
+  ids: number[],
+  permissions: number,
+): Promise<void> {
+  if (ids.length === 0 || ids.some((id) => !Number.isSafeInteger(id) || id <= 0)) {
+    throw unexpectedResponse('/user');
+  }
+  await request<unknown>('/user', { method: 'PUT', body: { ids, permissions } });
 }

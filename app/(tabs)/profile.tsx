@@ -9,6 +9,7 @@ import { useQuota } from '@/features/requests/hooks';
 import { usePublicSettings, useServerStatus } from '@/features/server/hooks';
 import { en } from '@/i18n/en';
 import { formatQuota } from '@/lib/format';
+import { canManageUsers } from '@/lib/permissions';
 import { seerrImageSource } from '@/lib/tmdb';
 import { useTheme } from '@/theme/useTheme';
 
@@ -25,6 +26,7 @@ export default function ProfileScreen() {
       displayName={user.displayName}
       avatar={user.avatar}
       requestCount={user.requestCount}
+      permissions={user.permissions}
       onSignOut={signOut}
       onForgetServer={forgetServer}
     />
@@ -39,6 +41,7 @@ function ProfileBody(props: {
   displayName?: string;
   avatar?: string;
   requestCount?: number;
+  permissions: number;
   onSignOut: () => Promise<void>;
   onForgetServer: () => Promise<void>;
 }) {
@@ -107,6 +110,9 @@ function ProfileBody(props: {
       <Button label={en.profile.notifications} variant="secondary" onPress={() => router.push('/profile/notifications')} />
       <Button label={en.profile.password} variant="secondary" onPress={() => router.push('/profile/password')} />
       <Button label={en.profile.watchHistory} variant="secondary" onPress={() => router.push('/profile/watch-data')} />
+      {canManageUsers(props.permissions) ? (
+        <Button label={en.profile.userAdministration} variant="secondary" onPress={() => router.push('/admin/users')} />
+      ) : null}
       <Button
         label={en.actions.signOut}
         variant="danger"

@@ -111,6 +111,13 @@ This app uses Seerr's native accounts ("local users"): an email and a password s
 | `GET /user/{id}/settings/password` | Whether a password exists | Does not return the password |
 | `POST /user/{id}/settings/password` | Change password | Current password is required when one exists; minimum 8 characters |
 | `GET /user/{id}/watch_data` | Play count and recently watched media | Read-only |
+| `GET /user?take=&skip=&q=` | User administration list/search | MANAGE_USERS in the app |
+| `GET /user/{id}` | User detail | MANAGE_USERS |
+| `POST /user` | Create a native user | App sends email, optional username, and an explicit password |
+| `DELETE /user/{id}` | Delete a user | Primary owner and current manager are protected in the app |
+| `GET /user/{id}/settings/permissions` | Permission mask | MANAGE_USERS |
+| `POST /user/{id}/settings/permissions` | Replace permission mask | Server enforces delegation limits |
+| `PUT /user` | Replace permissions for a batch | `{ ids, permissions }`; confirmed in the app |
 
 Search and discover items have `mediaType` (`movie`, `tv`, `person`, sometimes others), `id` (TMDB id), `title` (movies) or `name` (series), `releaseDate` or `firstAirDate`, `posterPath`, `backdropPath`, `overview`, and an optional `mediaInfo` with `status` and `status4k`. Show only `movie` and `tv`.
 
@@ -231,6 +238,8 @@ First match wins. Use `media.status4k` when `request.is4k` is true.
 | MANAGE_ISSUES | 1048576 |
 | VIEW_ISSUES | 2097152 |
 | CREATE_ISSUES | 4194304 |
+
+The app never calls the Plex, Jellyfin, or Emby import/link endpoints.
 
 Helpers (true with ADMIN or any listed bit):
 
