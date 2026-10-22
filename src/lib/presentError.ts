@@ -5,6 +5,7 @@ export function presentError(error: unknown, context: 'signIn' | 'generic' = 'ge
   if (!(error instanceof SeerrError)) return en.errors.generic;
   if (error.kind === 'timeout') return en.errors.timeout;
   if (error.kind === 'network') return en.errors.offline;
+  if (context === 'signIn' && error.kind === 'parse' && error.path === '/auth/me') return en.signIn.sessionMissing;
   if (context === 'signIn' && (error.status === 403 || error.status === 401)) return en.signIn.wrongCredentials;
   if (context === 'signIn' && error.status >= 500) return en.signIn.unavailable;
   if (error.status === 400 || error.kind === 'parse') return en.errors.generic;

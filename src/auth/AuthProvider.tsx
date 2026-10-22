@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Platform } from 'react-native';
 
 import { createSeerrClient, type ClientAuth, type SeerrClient } from '../api';
 import { SeerrError } from '../api/errors';
@@ -176,10 +177,16 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
   const signInWithPassword = useCallback(
     async (email: string, password: string) => {
       const url = serverRef.current;
-      if (!url) throw new SeerrError({ status: 0, path: '/auth/local', serverMessage: '', kind: 'parse' });
+      const trimmed = email.trim();
+      if (!url || !trimmed) {
+        throw new SeerrError({ status: 0, path: '/auth/local', serverMessage: '', kind: 'parse' });
+      }
       const next = clientFor(url);
-      await next.signIn(email.trim(), password);
-      const user = await next.getMe();
+      await next.signIn(trimmed, password);
+      if (Platform.OS !== 'web' && authRef.current.kind !== 'cookie') {
+        throw new SeerrError({ status: 0, path: '/auth/me', serverMessage: '', kind: 'parse' });
+      }
+      const user = await readCurrentUser(next);
       await storage.remove(sessionKeys.apiKey);
       await rememberUser(user, url);
       queryClient.clear();
@@ -258,6 +265,23 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+async function readCurrentUser(client: SeerrClient): Promise<SeerrUser> {
+  try {
+    return await client.getMe();
+  } catch (error) {
+    if (!(error instanceof SeerrError) || (error.status !== 401 && error.status !== 403)) throw error;
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    try {
+      return await client.getMe();
+    } catch (retryError) {
+      if (retryError instanceof SeerrError && (retryError.status === 401 || retryError.status === 403)) {
+        throw new SeerrError({ status: 0, path: '/auth/me', serverMessage: '', kind: 'parse' });
+      }
+      throw retryError;
+    }
+  }
 }
 
 export function useSession(): AuthContextValue {

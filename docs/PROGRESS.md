@@ -12,7 +12,7 @@ You fill in Decisions before Phase 0. The agent updates the rest at the end of e
 | ALLOW_HTTP in release builds | yes | iOS ATS and Android cleartext traffic are enabled for self-hosted LAN servers. HTTPS remains strongly preferred |
 | Native build method | EAS Build | Preview builds install as native apps; production builds target App Store Connect and Google Play |
 | iOS install method | EAS preview, then TestFlight/App Store | Requires the user's Apple Developer and App Store Connect setup |
-| Sign-in | Seerr accounts (email and password) via `/auth/local`; API key under Advanced | Fixed: this server uses Seerr's own accounts, not Jellyfin sign-in |
+| Sign-in | Seerr accounts (email and password) via `/auth/local`; API key under Advanced | Fixed: native Seerr accounts only. Plex sign-in is out of scope for now |
 | Forgot password in the app | when `emailEnabled` is true | The link is hidden otherwise. The app does not call reset unless the user asks |
 | Languages | English | Dutch later? |
 | Stack | Expo SDK 57, React Native 0.86, TypeScript | Moved down from SDK 58 on 2026-10-22: the App Store and Play Store copies of Expo Go are still SDK 57, and Android blocked sideloading Expo Go 58. SDK 57 meets the RN 0.86+ requirement for `credentials: 'omit'`. Move to SDK 58 once the store Expo Go supports it. Expo Go is for development; EAS produces standalone native apps |
@@ -99,5 +99,6 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 * 2026-10-21 · Phases 0–6 · Scaffolded the Expo app, Seerr client, session, and the screens in `docs/SPEC.md`. `PLANNING.md` was not in the repo, so behavior is recorded in `docs/SPEC.md`. Verify with `npm run typecheck`, `npm run lint`, and `npm test`. Then, on iPhone and Android in Expo Go: connect, sign in, discover, search, open a title, request it, review the requests list, and open profile. See the hand-off notes for the exact pass.
 * 2026-10-21 · Phase 7 · Selected `io.seerrlite.app`, added EAS preview/production profiles, and enabled HTTP in generated iOS and Android apps. Verify the resolved Expo config, link the EAS project, then install preview builds on both phones.
 * 2026-10-22 · Web preview · Added `react-native-web` and `react-dom` so the localhost page Expo opens in a browser can bundle. Restart `npx expo start` and reload the page. The phone app is still Expo Go or a native build.
+* 2026-10-22 · Sign-in · Native Seerr accounts only; no Jellyfin, Emby, or Plex sign-in. `/auth/me` is retried once after sign-in, and a missing session is no longer described as a wrong password. Verify by signing in with the email and password of a native Seerr account.
 * 2026-10-22 · Foundation · Moved from Expo SDK 58 to SDK 57 (Expo 57.0.31, React Native 0.86.3, React 19.2.3) so the store Expo Go 57 opens the project on both phones. Typecheck, lint, 38 tests, and Android, iOS, and web bundles pass. Verify by scanning the QR code from `npx expo start` with the store Expo Go.
 * 2026-10-22 · Web preview · The browser no longer calls SecureStore. Reload localhost and confirm the connect screen appears. iOS and Android still use the keychain.

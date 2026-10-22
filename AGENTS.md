@@ -4,7 +4,7 @@ Standing instructions for Cursor's agent (and any AGENTS.md-aware tool). Keep th
 
 ## Mission
 
-Seerr Lite is a lightweight, unofficial iOS and Android client for a self-hosted Seerr server (v3.x). Household members sign in with their Seerr account (an email and password stored in Seerr itself, not in Jellyfin), discover and search titles, request movies or specific seasons, and follow their requests. Admins approve or decline. One codebase: Expo, React Native and TypeScript.
+Seerr Lite is a lightweight, unofficial iOS and Android client for a self-hosted Seerr server (v3.x). Household members sign in with their Seerr account (a native Seerr account: an email and password stored in Seerr itself), discover and search titles, request movies or specific seasons, and follow their requests. Admins approve or decline. One codebase: Expo, React Native and TypeScript.
 
 ## Read first
 
@@ -73,7 +73,7 @@ scripts/smoke.ts             live API checks (Node via tsx)
 
 ## Seerr traps (details in docs/SEERR_API.md)
 
-* Sign in with `POST /auth/local` and `{ "email": "...", "password": "..." }`. Seerr looks the account up by email only, so a username fails. Require a non-empty value but don't validate the email format: users imported from Jellyfin sign in with their Jellyfin username unless an admin set a real email.
+* Sign in with `POST /auth/local` and `{ "email": "...", "password": "..." }`. Seerr looks the account up by email only. Require a non-empty value but don't validate the email format; Seerr decides.
 * The `/auth/local` response is a partial user without `permissions` or `displayName`. After every sign-in, load `GET /auth/me` and use that user everywhere.
 * Read the whole sign-in response body before sending the next request.
 * Session: take the session cookie (normally `connect.sid`) from `set-cookie` on sign-in, store `name=value` in SecureStore, send it back as a manual `Cookie` header, and replace it whenever a response sets a new one.
@@ -81,7 +81,7 @@ scripts/smoke.ts             live API checks (Node via tsx)
 * The official spec's enums are wrong. Use MediaStatus 1–7 and MediaRequestStatus 1–5 from SEERR_API.md, and render unknown values as a neutral state.
 * Request list items have no title or poster; fetch them per row with cached detail queries.
 * `mediaId` and the `movie/[id]` and `tv/[id]` routes use TMDB ids.
-* Don't use `/auth/jellyfin`, `/auth/plex` or Jellyfin Quick Connect; this server signs in with Seerr accounts.
+* Only native Seerr accounts via `POST /auth/local`. Plex sign-in (`/auth/plex`) is out of scope for now.
 
 ## Security and privacy
 
