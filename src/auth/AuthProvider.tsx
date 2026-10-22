@@ -9,6 +9,7 @@ import { parseUser } from '../api/parse';
 import type { SeerrUser } from '../api/types';
 import { normalizeServerUrl } from '../api/url';
 import { presentError } from '../lib/presentError';
+import { anonymousAuthWithCsrf } from './authState';
 import { secureSessionStorage, sessionKeys, type SessionStorage } from './storage';
 
 export type Session =
@@ -236,7 +237,7 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
         throw new SeerrError({ status: 0, path: '/auth/local', serverMessage: '', kind: 'parse' });
       }
       await clearPersistedAuth();
-      authRef.current = { kind: 'none' };
+      authRef.current = anonymousAuthWithCsrf(authRef.current);
       userRef.current = null;
       persistentRef.current = staySignedIn && Platform.OS !== 'web';
       const next = clientFor(url);
@@ -249,7 +250,9 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
         await rememberUser(user, url);
         queryClient.clear();
       } catch (error) {
+        const anonymousAuth = anonymousAuthWithCsrf(authRef.current);
         await clearSecrets();
+        authRef.current = anonymousAuth;
         throw error;
       }
     },

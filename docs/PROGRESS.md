@@ -92,10 +92,11 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 * Nothing in this change has been opened in Expo Go. The phone checks below are still open.
 * No EAS project has been linked and no signed binary has been built. Run `npx eas-cli init`, then a preview build.
 * `npm` reports audit findings in the Expo dependency tree. They were left alone.
-* The browser preview stores the session cookie and optional API key in `localStorage`. Phones keep them in the platform keychain.
+* Browser preview sessions are memory-only. Opt-in persistent sessions use the platform keychain on phones.
 
 ## Log
 
+* 2026-10-22 · Sign-in regression · Password sign-in now preserves the anonymous CSRF cookies obtained before authentication while still discarding every prior session or API-key credential. Failed attempts retain only refreshed CSRF cookies, so retrying does not depend on an extra rejected request and CSRF refresh round trip. Verify in Expo Go with Seerr CSRF protection enabled.
 * 2026-10-22 · Security foundation · Renamed the visible app to Seerr Mobile. Added opt-in native keychain persistence, memory-only default/browser sessions, origin-bound auth records, stale-response guards, HTTP risk confirmation, HTTPS-only API-key sign-in, restricted avatars, external-link confirmation, cookie deletion handling, and sanitized server messages.
 * 2026-10-22 · Sign-in · CSRF protection can stay on. The app stores `_csrf` and `XSRF-TOKEN`, sends `X-XSRF-TOKEN` on changes, and retries once after a CSRF rejection. Verify on the phone over HTTPS: connect, then sign in with a native Seerr account while Settings, Network, Enable CSRF Protection is on.
 
