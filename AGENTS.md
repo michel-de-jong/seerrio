@@ -93,7 +93,7 @@ scripts/smoke.ts             live API checks (Node via tsx)
 * API-key sign-in acts as the Seerr admin. Keep it behind "Advanced" with the warning from SPEC.md.
 * No analytics, crash reporting or third-party calls; the only external host is `image.tmdb.org`.
 * Never hardcode server URLs, emails, user ids or credentials, including in tests and fixtures (use `https://seerr.example.test` and `user@example.test`).
-* Ask before changing bundle ids, ATS or cleartext settings in `app.config.ts`, or `eas.json`.
+* Ask before changing bundle ids, ATS or cleartext settings in `app.json`, or `eas.json`.
 
 ## Working agreement
 

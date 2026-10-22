@@ -118,7 +118,7 @@ Accepted configuration warning: iOS ATS and Android cleartext traffic are enable
 Do not submit until all items below are complete:
 
 - Confirm the original app icon (`scripts/generate-icons.py`) is acceptable; it must not reuse Seerr's logo.
-- The EAS project ID in `app.config.ts` is a public project identifier. Account tokens and signing credentials stay out of git.
+- Keep Expo configuration in static `app.json`. The EAS project ID and owner are public project identifiers. Account tokens and signing credentials stay out of git.
 - Create signed internal builds with `npx eas-cli build --platform all --profile preview`.
 - Install the preview build on a physical iPhone and Android phone.
 - For local builds, install a compatible Java runtime/Android SDK and full Xcode with CocoaPods 1.15.2 or newer. EAS builds do not depend on this Mac toolchain.

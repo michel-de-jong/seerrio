@@ -56,14 +56,20 @@ requireCheck(
   'All application HTTP uses src/api/client.ts',
 );
 
-const config = read('app.config.ts');
+const config = JSON.parse(read('app.json')).expo;
+const buildProperties = (config.plugins ?? []).find(
+  (plugin) => Array.isArray(plugin) && plugin[0] === 'expo-build-properties',
+);
 requireCheck(
-  config.includes("bundleIdentifier: 'io.seerrmobile.app'") && config.includes("package: 'io.seerrmobile.app'"),
+  config.ios?.bundleIdentifier === 'io.seerrmobile.app' && config.android?.package === 'io.seerrmobile.app',
   'Permanent iOS and Android identifiers are unchanged',
 );
-requireCheck(config.includes("userInterfaceStyle: 'automatic'"), 'Native appearance follows the system color scheme');
+requireCheck(config.userInterfaceStyle === 'automatic', 'Native appearance follows the system color scheme');
 requireCheck(
-  !/\bscheme\s*:|\bintentFilters\s*:|\bassociatedDomains\s*:/.test(config),
+  config.scheme == null &&
+    config.intentFilters == null &&
+    config.ios?.associatedDomains == null &&
+    config.android?.intentFilters == null,
   'No inbound custom scheme, intent filter, or associated domain is configured',
 );
 
@@ -96,7 +102,10 @@ for (const path of ['src/components/Button.tsx', 'src/components/PosterCard.tsx'
   requireCheck(read(path).includes('accessibilityRole='), `${path} exposes accessibility semantics`);
 }
 
-if (config.includes('NSAllowsArbitraryLoads: true') || config.includes('usesCleartextTraffic: true')) {
+if (
+  config.ios?.infoPlist?.NSAppTransportSecurity?.NSAllowsArbitraryLoads === true ||
+  buildProperties?.[1]?.android?.usesCleartextTraffic === true
+) {
   warn('Release permits cleartext HTTP for user-confirmed self-hosted servers; HTTPS remains strongly preferred');
 }
 

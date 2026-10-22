@@ -75,7 +75,8 @@ Local iOS and Android compilation also needs a full Xcode installation, CocoaPod
 
 ## Changelog
 
-* 2026-10-22 · EAS project link · Added the public EAS project ID to `app.config.ts`. Dynamic config cannot be edited by `eas init`, so the ID has to be committed by hand. Signing credentials remain outside git.
+* 2026-10-22 · Static Expo config · Replaced `app.config.ts` with `app.json`. The TypeScript file had no dynamic behavior, but EAS refuses to modify dynamic config and stopped on every new field. The Expo owner is `elderscrolls-team`.
+* 2026-10-22 · EAS project link · Added the public EAS project ID. Signing credentials remain outside git.
 * 2026-10-22 · Public documentation · Rewrote the public project documents for release: current status, privacy contact through GitHub Issues, accurate icon licensing, and removal of stale development notes.
 * 2026-10-22 · Store preparation · Set the permanent app id to `io.seerrmobile.app`, limited native support to phones, declared exempt encryption, and added Play artwork and the privacy policy.
 * 2026-10-22 · App icon and splash · Replaced the template icon with original artwork and added a dark launch screen.
