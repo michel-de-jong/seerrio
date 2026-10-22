@@ -16,7 +16,7 @@ Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebas
 
 ## Out of scope
 
-Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User management. Issue reports. Push notifications. Analytics. Languages other than English. CSRF double-submit (v1 expects CSRF protection to stay off). Store listing content and submission.
+Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User management. Issue reports. Push notifications. Analytics. Languages other than English. Store listing content and submission.
 
 ## Connect
 
@@ -33,7 +33,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User m
 * Require a password. Do not store it. Tag the fields for the platform password manager.
 * Read the whole sign-in response, store `connect.sid` (or the fallback session cookie) as `name=value` without decoding, then load `/auth/me` and use that user everywhere.
 * Sign in only with `POST /auth/local` (native Seerr accounts).
-* A 401 or 403 on `/auth/local` says Seerr rejected the native-account sign-in, includes the safe HTTP status and server message, and tells the user to check the account's Email field and Seerr password. A CSRF 403 says CSRF protection blocked the request instead. A 5xx from Seerr says to check that local sign-in is enabled when public settings say it is off.
+* A 401 or 403 on `/auth/local` says Seerr rejected the native-account sign-in, includes the safe HTTP status and server message, and tells the user to check the account's Email field and Seerr password. When CSRF protection is on, send the CSRF cookies and `X-XSRF-TOKEN`, and retry the change once after refreshing them. If it still fails, say CSRF protection blocked the request. A 5xx from Seerr says to check that local sign-in is enabled when public settings say it is off.
 * After a successful sign-in, load `/auth/me` once more if the first attempt is 401 or 403. Seerr can still be saving the session. If that also fails, or the phone received no session cookie, say the session did not start.
 * Advanced shows the API-key warning: the key acts as the admin, requests are attributed to the admin and approved automatically, and it belongs on the owner's device only.
 * Sign out calls `POST /auth/logout` as a best effort and clears the cookie, API key, and cached user. Change server also clears the URL.

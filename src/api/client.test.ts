@@ -70,6 +70,46 @@ describe('createSeerrClient', () => {
     expect(headers.get('cookie')).toBeNull();
   });
 
+  it('sends the csrf cookies and decoded token on a change', async () => {
+    const fetchMock = jest.fn(async (_input: string, _init: RequestInit) => jsonResponse(200, { id: 1 }));
+    const client = createSeerrClient({
+      serverUrl,
+      getAuth: async () => ({ kind: 'cookie', cookie: '_csrf=secret; XSRF-TOKEN=a%3Ab; connect.sid=s%3Aabc' }),
+      fetch: fetchMock,
+    });
+    await client.signIn('user@example.test', 'secret');
+    const headers = new Headers(fetchMock.mock.calls[0]?.[1]?.headers);
+    expect(headers.get('cookie')).toBe('_csrf=secret; XSRF-TOKEN=a%3Ab; connect.sid=s%3Aabc');
+    expect(headers.get('x-xsrf-token')).toBe('a:b');
+  });
+
+  it('refreshes a rejected csrf token once and retries the change', async () => {
+    const stored: string[] = [];
+    let auth: ClientAuth = { kind: 'none' };
+    const fetchMock = jest.fn(async (input: string, _init: RequestInit) => {
+      if (String(input).endsWith('/status')) {
+        return jsonResponse(200, { version: '3.5.0' }, { 'set-cookie': '_csrf=secret; Path=/, XSRF-TOKEN=token; Path=/' });
+      }
+      if (stored.length === 0) return jsonResponse(403, { message: 'invalid csrf token' });
+      return jsonResponse(200, { id: 1, email: 'user@example.test' }, { 'set-cookie': 'connect.sid=s%3Aabc; Path=/' });
+    });
+    const client = createSeerrClient({
+      serverUrl,
+      getAuth: async () => auth,
+      onSetCookie: async (cookie) => {
+        stored.push(cookie);
+        auth = cookie && cookie.includes('connect.sid=') ? { kind: 'cookie', cookie } : { kind: 'none', cookie: cookie || undefined };
+      },
+      fetch: fetchMock,
+    });
+
+    await client.signIn('user@example.test', 'secret');
+    expect(String(fetchMock.mock.calls[1]?.[0])).toBe('https://seerr.example.test/api/v1/status');
+    const retry = new Headers(fetchMock.mock.calls[2]?.[1]?.headers);
+    expect(retry.get('x-xsrf-token')).toBe('token');
+    expect(retry.get('cookie')).toContain('_csrf=secret');
+  });
+
   it('reads message, then error, and keeps the path off the secret values', async () => {
     const client = createSeerrClient({
       serverUrl,

@@ -1,14 +1,14 @@
 import { assertNever } from './assertNever';
-import { extractSessionCookie } from './cookies';
+import { csrfToken, mergeCookieHeader, parseSetCookie, withoutCsrfCookies } from './cookies';
 import { isAbortError, messageFromBody, SeerrError } from './errors';
 import { buildSeerrUrl, normalizeServerUrl } from './url';
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
 export type ClientAuth =
-  | { kind: 'none' }
+  | { kind: 'none'; cookie?: string }
   | { kind: 'cookie'; cookie: string }
-  | { kind: 'apiKey'; apiKey: string };
+  | { kind: 'apiKey'; apiKey: string; cookie?: string };
 
 export type SeerrRequestOptions = {
   method?: 'GET' | 'POST' | 'DELETE';
@@ -16,6 +16,7 @@ export type SeerrRequestOptions = {
   body?: unknown;
   anonymous?: boolean;
   signal?: AbortSignal;
+  csrfRetried?: boolean;
 };
 
 export type SeerrRequest = <T>(path: string, options?: SeerrRequestOptions) => Promise<T>;
@@ -56,24 +57,20 @@ export function createRequest(options: SeerrClientOptions): SeerrRequest {
       });
     }
 
+    const method = requestOptions.method ?? 'GET';
+    const auth = await options.getAuth();
     const headers: Record<string, string> = { Accept: 'application/json' };
     if (requestOptions.body !== undefined) {
       headers['Content-Type'] = 'application/json';
     }
-    if (!requestOptions.anonymous) {
-      const auth = await options.getAuth();
-      switch (auth.kind) {
-        case 'none':
-          break;
-        case 'cookie':
-          if (auth.cookie) headers.Cookie = auth.cookie;
-          break;
-        case 'apiKey':
-          if (auth.apiKey) headers['X-Api-Key'] = auth.apiKey;
-          break;
-        default:
-          assertNever(auth);
-      }
+    const cookie = cookieFromAuth(auth);
+    if (cookie) headers.Cookie = cookie;
+    if (!requestOptions.anonymous && auth.kind === 'apiKey' && auth.apiKey) {
+      headers['X-Api-Key'] = auth.apiKey;
+    }
+    if (method === 'POST' || method === 'DELETE') {
+      const token = csrfToken(cookie);
+      if (token) headers['X-XSRF-TOKEN'] = token;
     }
 
     const controller = new AbortController();
@@ -83,16 +80,16 @@ export function createRequest(options: SeerrClientOptions): SeerrRequest {
 
     try {
       const response = await fetchImpl(url, {
-        method: requestOptions.method ?? 'GET',
+        method,
         headers,
         body: requestOptions.body === undefined ? undefined : JSON.stringify(requestOptions.body),
         credentials: 'omit',
         signal: controller.signal,
       });
       const text = await response.text();
-      const sessionCookie = extractSessionCookie(response.headers.get('set-cookie'));
-      if (sessionCookie && options.onSetCookie) {
-        await options.onSetCookie(sessionCookie);
+      const merged = mergeCookieHeader(cookie, parseSetCookie(setCookieHeader(response.headers)));
+      if (merged && merged !== cookie && options.onSetCookie) {
+        await options.onSetCookie(merged);
       }
       if (!requestOptions.anonymous && response.status === 401 && options.onUnauthorized) {
         await options.onUnauthorized();
@@ -113,10 +110,20 @@ export function createRequest(options: SeerrClientOptions): SeerrRequest {
       }
 
       if (!response.ok) {
+        const serverMessage = messageFromBody(parsed);
+        const canRefreshCsrf =
+          !requestOptions.csrfRetried &&
+          (method === 'POST' || method === 'DELETE') &&
+          response.status === 403 &&
+          /csrf/i.test(serverMessage);
+        if (canRefreshCsrf) {
+          await refreshCsrf(options, fetchImpl, serverUrl, controller.signal);
+          return request<T>(path, { ...requestOptions, csrfRetried: true });
+        }
         throw new SeerrError({
           status: response.status,
           path,
-          serverMessage: messageFromBody(parsed),
+          serverMessage,
           kind: 'http',
         });
       }
@@ -134,4 +141,46 @@ export function createRequest(options: SeerrClientOptions): SeerrRequest {
       requestOptions.signal?.removeEventListener('abort', abortFromCaller);
     }
   };
+}
+
+function cookieFromAuth(auth: ClientAuth): string | undefined {
+  switch (auth.kind) {
+    case 'none':
+      return auth.cookie;
+    case 'cookie':
+      return auth.cookie;
+    case 'apiKey':
+      return auth.cookie;
+    default:
+      return assertNever(auth);
+  }
+}
+
+function setCookieHeader(headers: Headers): string | null {
+  const withSetCookie = headers as Headers & { getSetCookie?: () => string[] };
+  const many = withSetCookie.getSetCookie?.();
+  if (many && many.length > 0) return many.join(', ');
+  return headers.get('set-cookie');
+}
+
+async function refreshCsrf(
+  options: SeerrClientOptions,
+  fetchImpl: FetchLike,
+  serverUrl: string,
+  signal: AbortSignal,
+): Promise<void> {
+  const auth = await options.getAuth();
+  const kept = withoutCsrfCookies(cookieFromAuth(auth));
+  if (options.onSetCookie) await options.onSetCookie(kept ?? '');
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (kept) headers.Cookie = kept;
+  const response = await fetchImpl(buildSeerrUrl(serverUrl, '/status'), {
+    method: 'GET',
+    headers,
+    credentials: 'omit',
+    signal,
+  });
+  await response.text();
+  const merged = mergeCookieHeader(kept, parseSetCookie(setCookieHeader(response.headers)));
+  if (options.onSetCookie) await options.onSetCookie(merged ?? '');
 }

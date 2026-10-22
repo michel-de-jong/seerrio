@@ -96,6 +96,8 @@ Smoke has not been run against a live server in this session. `.env.local` was n
 
 ## Log
 
+* 2026-10-22 · Sign-in · CSRF protection can stay on. The app stores `_csrf` and `XSRF-TOKEN`, sends `X-XSRF-TOKEN` on changes, and retries once after a CSRF rejection. Verify on the phone over HTTPS: connect, then sign in with a native Seerr account while Settings, Network, Enable CSRF Protection is on.
+
 * 2026-10-22 · Error handling · Connect now distinguishes unreachable phone routes, timeouts, non-Seerr responses, missing `/api/v1`, proxy blocks, and server errors. Sign-in reports Seerr's safe HTTP status/message and detects CSRF before classifying a credential rejection. Verify on a phone with an invalid host, a reachable non-Seerr URL, and a native-account sign-in.
 * 2026-10-21 · Phases 0–6 · Scaffolded the Expo app, Seerr client, session, and the screens in `docs/SPEC.md`. `PLANNING.md` was not in the repo, so behavior is recorded in `docs/SPEC.md`. Verify with `npm run typecheck`, `npm run lint`, and `npm test`. Then, on iPhone and Android in Expo Go: connect, sign in, discover, search, open a title, request it, review the requests list, and open profile. See the hand-off notes for the exact pass.
 * 2026-10-21 · Phase 7 · Selected `io.seerrlite.app`, added EAS preview/production profiles, and enabled HTTP in generated iOS and Android apps. Verify the resolved Expo config, link the EAS project, then install preview builds on both phones.

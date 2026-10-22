@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { Platform } from 'react-native';
 
 import { createSeerrClient, type ClientAuth, type SeerrClient } from '../api';
+import { csrfCookiesOnly, hasSessionCookie } from '../api/cookies';
 import { SeerrError } from '../api/errors';
 import { parseUser } from '../api/parse';
 import type { SeerrUser } from '../api/types';
@@ -54,9 +55,28 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
 
   const onSetCookie = useCallback(
     async (cookie: string) => {
-      authRef.current = { kind: 'cookie', cookie };
+      if (!cookie) {
+        if (authRef.current.kind === 'apiKey') {
+          authRef.current = { kind: 'apiKey', apiKey: authRef.current.apiKey };
+        } else {
+          authRef.current = { kind: 'none' };
+        }
+        await storage.remove(sessionKeys.cookie);
+        return;
+      }
+      if (authRef.current.kind === 'apiKey' && !hasSessionCookie(cookie)) {
+        authRef.current = { kind: 'apiKey', apiKey: authRef.current.apiKey, cookie };
+        await storage.set(sessionKeys.cookie, cookie);
+        return;
+      }
+      if (hasSessionCookie(cookie)) {
+        authRef.current = { kind: 'cookie', cookie };
+        await storage.set(sessionKeys.cookie, cookie);
+        await storage.remove(sessionKeys.apiKey);
+        return;
+      }
+      authRef.current = { kind: 'none', cookie };
       await storage.set(sessionKeys.cookie, cookie);
-      await storage.remove(sessionKeys.apiKey);
     },
     [storage],
   );
@@ -118,9 +138,10 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
       const apiKey = await storage.get(sessionKeys.apiKey);
       const cookie = await storage.get(sessionKeys.cookie);
       const cached = parseUser(safeJson(await storage.get(sessionKeys.user)));
-      if (apiKey) authRef.current = { kind: 'apiKey', apiKey };
-      else if (cookie) authRef.current = { kind: 'cookie', cookie };
+      if (apiKey) authRef.current = { kind: 'apiKey', apiKey, cookie: cookie ?? undefined };
+      else if (cookie && hasSessionCookie(cookie)) authRef.current = { kind: 'cookie', cookie };
       else {
+        if (cookie) authRef.current = { kind: 'none', cookie };
         if (!cancelled) setSession({ status: 'needsSignIn', serverUrl: normalized, hasStoredAuth: false });
         return;
       }
@@ -199,9 +220,11 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
       const url = serverRef.current;
       const trimmed = apiKey.trim();
       if (!url || !trimmed) throw new SeerrError({ status: 0, path: '/auth/me', serverMessage: '', kind: 'parse' });
-      authRef.current = { kind: 'apiKey', apiKey: trimmed };
+      const csrf = csrfCookiesOnly(authRef.current.cookie);
+      authRef.current = { kind: 'apiKey', apiKey: trimmed, cookie: csrf ?? undefined };
       await storage.set(sessionKeys.apiKey, trimmed);
-      await storage.remove(sessionKeys.cookie);
+      if (csrf) await storage.set(sessionKeys.cookie, csrf);
+      else await storage.remove(sessionKeys.cookie);
       try {
         const user = await clientFor(url).getMe();
         await rememberUser(user, url);
