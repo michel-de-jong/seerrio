@@ -1,4 +1,4 @@
-import { extractSessionCookie } from './cookies';
+import { csrfToken, extractSessionCookie, mergeCookieHeader, parseSetCookie, withoutCsrfCookies } from './cookies';
 
 const EXPIRES = 'Expires=Wed, 21 Oct 2026 07:28:00 GMT';
 
@@ -22,5 +22,21 @@ describe('extractSessionCookie', () => {
   it('returns null for an empty header', () => {
     expect(extractSessionCookie(null)).toBeNull();
     expect(extractSessionCookie('')).toBeNull();
+  });
+});
+
+describe('csrf cookies', () => {
+  it('keeps the session and both csrf cookies from one joined header', () => {
+    const header = `_csrf=secret; Path=/; HttpOnly, XSRF-TOKEN=a%3Ab; Path=/, connect.sid=s%3Azzz; Path=/; ${EXPIRES}; HttpOnly`;
+    expect(mergeCookieHeader(null, parseSetCookie(header))).toBe('_csrf=secret; XSRF-TOKEN=a%3Ab; connect.sid=s%3Azzz');
+    expect(csrfToken('_csrf=secret; XSRF-TOKEN=a%3Ab')).toBe('a:b');
+  });
+
+  it('replaces a cookie and can drop the csrf pair before refreshing it', () => {
+    const merged = mergeCookieHeader('connect.sid=s%3Aold; _csrf=old; XSRF-TOKEN=old', [
+      { name: 'XSRF-TOKEN', pair: 'XSRF-TOKEN=new' },
+    ]);
+    expect(merged).toBe('connect.sid=s%3Aold; _csrf=old; XSRF-TOKEN=new');
+    expect(withoutCsrfCookies(merged)).toBe('connect.sid=s%3Aold');
   });
 });

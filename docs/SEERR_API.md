@@ -225,14 +225,14 @@ The values come from Seerr's `server/lib/permissions.ts`; re-check there if an u
 | --- | --- | --- |
 | 400 | Validator rejected a parameter (query encoding, invalid `filter`) | A bug: record the path (no secrets), show a generic error |
 | 401 | No cookie or API key sent ("cookie 'connect.sid' required") | Signed out |
-| 403 | Native-account credentials rejected (on `/auth/local`), not permitted, quota, expired session, or CSRF ("invalid csrf token") | On sign-in: show that Seerr rejected the credentials, with the HTTP status and safe server message. Check CSRF first so it is not mislabeled as a credential failure. Elsewhere: if `/auth/me` also fails, signed out; otherwise show the server message |
+| 403 | Native-account credentials rejected (on `/auth/local`), not permitted, quota, expired session, or CSRF ("invalid csrf token") | On a change, refresh the CSRF cookies once and retry. If it is still CSRF, say CSRF blocked it. On sign-in, any other 401 or 403 shows the HTTP status and safe server message. Elsewhere: if `/auth/me` also fails, signed out; otherwise show the server message |
 | 404 | Not found | Contextual |
 | 409 | Duplicate request | "Already requested" |
 | 5xx | Seerr or an upstream service failed; on `/auth/local` it can also mean local sign-in is turned off | Sign-in: check `localLogin` and show the "turned off" message if it's false. Elsewhere: retry queries with backoff; never auto-retry mutations |
 
 ## CSRF protection
 
-Seerr, Settings, Network, "Enable CSRF Protection" is off by default. When it's on, Seerr blocks every external API call that changes data (POST and DELETE from this app get 403 "invalid csrf token") and requires HTTPS. v1 asks the admin to keep it off. A later version could implement the double-submit pattern: get the `_csrf` and `XSRF-TOKEN` cookies from `GET /status`, send both cookies plus an `X-XSRF-TOKEN` header with the decoded token, and retry once on a CSRF 403.
+Seerr, Settings, Network, "Enable CSRF Protection" is off by default. When it's on, Seerr requires HTTPS and checks CSRF before it checks the password. `GET /status` sets `_csrf` (httpOnly) and `XSRF-TOKEN`. The app stores both with the session cookie, sends them on later requests, and sends the decoded `XSRF-TOKEN` as `X-XSRF-TOKEN` on POST and DELETE. A 403 whose message mentions CSRF drops those two cookies, loads `/status` again, and retries the change once. An API key does not skip this check.
 
 ## Versions
 
