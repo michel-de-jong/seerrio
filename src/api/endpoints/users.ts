@@ -7,7 +7,6 @@ import {
   parseUser,
   parseUserList,
   parseUserMainSettings,
-  parseWatchData,
 } from '../parse';
 import type {
   CreateUserBody,
@@ -16,7 +15,6 @@ import type {
   SeerrUser,
   UserList,
   UserMainSettings,
-  WatchData,
 } from '../types';
 
 export async function getQuota(request: SeerrRequest, userId: number, signal?: AbortSignal): Promise<Quota> {
@@ -102,18 +100,6 @@ export async function changePassword(
     method: 'POST',
     body: { ...(currentPassword === undefined ? {} : { currentPassword }), newPassword },
   });
-}
-
-export async function getWatchData(
-  request: SeerrRequest,
-  userId: number,
-  signal?: AbortSignal,
-): Promise<WatchData> {
-  const path = userPath(userId, '/watch_data');
-  const body = await request<unknown>(path, { signal });
-  const parsed = parseWatchData(body);
-  if (!parsed) throw unexpectedResponse(path);
-  return parsed;
 }
 
 export async function listUsers(

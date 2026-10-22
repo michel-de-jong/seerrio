@@ -12,6 +12,7 @@ import { SeerrError } from '@/api/errors';
 import { AuthProvider, useSession } from '@/auth/AuthProvider';
 import { en } from '@/i18n/en';
 import { OnlineManager } from '@/lib/useOnline';
+import { AppearanceProvider } from '@/theme/AppearanceProvider';
 import { useTheme } from '@/theme/useTheme';
 
 function createQueryClient(): QueryClient {
@@ -38,12 +39,14 @@ export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <OnlineManager />
-          <RootNavigator />
-        </AuthProvider>
-      </QueryClientProvider>
+      <AppearanceProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <OnlineManager />
+            <RootNavigator />
+          </AuthProvider>
+        </QueryClientProvider>
+      </AppearanceProvider>
     </SafeAreaProvider>
   );
 }
@@ -124,7 +127,6 @@ function RootNavigator() {
         <Stack.Screen name="profile/settings" options={{ title: en.profile.settings }} />
         <Stack.Screen name="profile/notifications" options={{ title: en.profile.notifications }} />
         <Stack.Screen name="profile/password" options={{ title: en.profile.password }} />
-        <Stack.Screen name="profile/watch-data" options={{ title: en.profile.watchHistory }} />
         <Stack.Screen name="admin/users/index" options={{ title: en.profile.userAdministration }} />
         <Stack.Screen name="admin/users/create" options={{ title: en.userAdmin.create }} />
         <Stack.Screen name="admin/users/[id]" options={{ title: en.userAdmin.detail }} />

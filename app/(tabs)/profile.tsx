@@ -5,13 +5,14 @@ import { Alert, ScrollView, Text, View } from 'react-native';
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { SegmentedControl } from '@/components/SegmentedControl';
 import { useQuota } from '@/features/requests/hooks';
 import { usePublicSettings, useServerStatus } from '@/features/server/hooks';
 import { en } from '@/i18n/en';
 import { formatQuota } from '@/lib/format';
 import { canManageSettings, canManageUsers, canViewBlocklist } from '@/lib/permissions';
 import { seerrImageSource } from '@/lib/tmdb';
-import { useTheme } from '@/theme/useTheme';
+import { useAppearance, useTheme } from '@/theme/useTheme';
 
 export default function ProfileScreen() {
   const { session, client, signOut, forgetServer } = useSession();
@@ -46,6 +47,7 @@ function ProfileBody(props: {
   onForgetServer: () => Promise<void>;
 }) {
   const theme = useTheme();
+  const { appearance, setAppearance } = useAppearance();
   const { getAuth } = useSession();
   const quota = useQuota(props.userId);
   const status = useServerStatus();
@@ -106,10 +108,21 @@ function ProfileBody(props: {
       <Text style={{ color: theme.colors.text }}>
         {en.profile.version}: {status.data?.version ?? en.status.unknown}
       </Text>
+      <Text style={{ color: theme.colors.text, fontWeight: '700' }}>{en.appearance.title}</Text>
+      <Text style={{ color: theme.colors.muted, lineHeight: 20 }}>{en.appearance.hint}</Text>
+      <SegmentedControl
+        label={en.appearance.title}
+        options={[
+          { value: 'system', label: en.appearance.system },
+          { value: 'light', label: en.appearance.light },
+          { value: 'dark', label: en.appearance.dark },
+        ]}
+        value={appearance}
+        onChange={setAppearance}
+      />
       <Button label={en.profile.settings} onPress={() => router.push('/profile/settings')} />
       <Button label={en.profile.notifications} variant="secondary" onPress={() => router.push('/profile/notifications')} />
       <Button label={en.profile.password} variant="secondary" onPress={() => router.push('/profile/password')} />
-      <Button label={en.profile.watchHistory} variant="secondary" onPress={() => router.push('/profile/watch-data')} />
       {canManageUsers(props.permissions) ? (
         <Button label={en.profile.userAdministration} variant="secondary" onPress={() => router.push('/admin/users')} />
       ) : null}

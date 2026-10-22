@@ -348,15 +348,6 @@ export type NotificationSettings = {
   webPushEnabled?: boolean;
 };
 
-export type WatchData = {
-  playCount: number;
-  recentlyWatched: {
-    id: number;
-    tmdbId: number;
-    mediaType: MediaType;
-  }[];
-};
-
 export type UserList = {
   page: number;
   pages: number;

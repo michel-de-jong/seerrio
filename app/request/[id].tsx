@@ -1,9 +1,10 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Alert, ScrollView, Switch, Text, View } from 'react-native';
 
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
+import { SeasonChoice } from '@/components/SeasonChoice';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
@@ -85,25 +86,20 @@ function RequestDetails({ id }: { id: number }) {
             ? seasons.map((season) => {
                 const selected = effectiveSeasons.includes(season.seasonNumber);
                 return (
-                  <Pressable
+                  <SeasonChoice
                     key={season.seasonNumber}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: selected }}
+                    label={en.media.seasonName(season.seasonNumber, season.name)}
+                    detail={season.episodeCount == null ? undefined : en.media.episodes(season.episodeCount)}
+                    selected={selected}
                     onPress={() =>
                       setSelectedSeasons((current) => {
                         const values = current ?? effectiveSeasons;
-                        return (
-                        selected
+                        return selected
                           ? values.filter((value) => value !== season.seasonNumber)
-                          : [...values, season.seasonNumber].sort((a, b) => a - b)
-                        );
+                          : [...values, season.seasonNumber].sort((a, b) => a - b);
                       })
                     }
-                    style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: theme.space.sm }}
-                  >
-                    <Text style={{ color: theme.colors.text }}>{en.media.seasonName(season.seasonNumber, season.name)}</Text>
-                    <Text style={{ color: theme.colors.accent }}>{selected ? '✓' : ''}</Text>
-                  </Pressable>
+                  />
                 );
               })
             : null}

@@ -27,7 +27,6 @@ export const queryKeys = {
   userMainSettings: (userId: number) => ['user-settings', userId, 'main'] as const,
   userNotifications: (userId: number) => ['user-settings', userId, 'notifications'] as const,
   passwordStatus: (userId: number) => ['user-settings', userId, 'password'] as const,
-  watchData: (userId: number) => ['user', userId, 'watch-data'] as const,
   users: (query: string) => ['users', query] as const,
   usersAll: ['users'] as const,
   user: (userId: number) => ['user', userId] as const,

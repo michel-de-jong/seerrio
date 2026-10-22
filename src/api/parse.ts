@@ -39,7 +39,6 @@ import type {
   TvSeason,
   UserMainSettings,
   UserList,
-  WatchData,
 } from './types';
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -626,21 +625,6 @@ export function parseNotificationSettings(value: unknown): NotificationSettings 
     result.discordIds = value.discordIds.filter((id): id is string => typeof id === 'string');
   }
   return result;
-}
-
-export function parseWatchData(value: unknown): WatchData | null {
-  if (!isRecord(value)) return null;
-  const playCount = numberField(value, 'playCount') ?? 0;
-  const recentlyWatched = Array.isArray(value.recentlyWatched)
-    ? value.recentlyWatched.flatMap((item) => {
-        if (!isRecord(item)) return [];
-        const id = numberField(item, 'id');
-        const tmdbId = numberField(item, 'tmdbId');
-        const mediaType = mediaTypeOf(item.mediaType);
-        return id === undefined || tmdbId === undefined || !mediaType ? [] : [{ id, tmdbId, mediaType }];
-      })
-    : [];
-  return { playCount, recentlyWatched };
 }
 
 export function parseUserList(value: unknown): UserList | null {

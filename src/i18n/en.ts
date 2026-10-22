@@ -71,6 +71,8 @@ export const en = {
   signIn: {
     title: 'Sign in',
     intro: 'Use the email and password of your Seerr account.',
+    server: 'Server',
+    serverLabel: (url: string) => `Signing in to ${url}`,
     emailLabel: 'Email',
     passwordLabel: 'Password',
     rejected: (status: number, message: string) =>
@@ -156,6 +158,7 @@ export const en = {
     partialLocked: 'This server asks for every remaining season together.',
     none: 'There is nothing left to request.',
     selectSeason: 'Choose at least one season.',
+    selectedSeasons: (count: number) => (count === 1 ? '1 season selected' : `${count} seasons selected`),
     quota: 'You have used the request quota for this.',
     seasonLabel: (name: string) => `Request ${name}`,
   },
@@ -232,7 +235,6 @@ export const en = {
     settings: 'Account settings',
     notifications: 'Notifications',
     password: 'Change password',
-    watchHistory: 'Watch history',
     userAdministration: 'User administration',
     serverAdministration: 'Server administration',
     signOutTitle: 'Sign out?',
@@ -283,9 +285,12 @@ export const en = {
     confirmBody: 'Use the new password the next time Seerr asks you to sign in.',
     changed: 'Password changed.',
   },
-  watchData: {
-    playCount: (count: number) => `${count} plays recorded`,
-    empty: 'No recently watched titles.',
+  appearance: {
+    title: 'Appearance',
+    hint: 'Dark mode uses Seerr’s indigo and gray palette. System follows this phone’s setting.',
+    system: 'System',
+    light: 'Light',
+    dark: 'Dark',
   },
   userAdmin: {
     search: 'Search users',

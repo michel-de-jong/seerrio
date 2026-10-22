@@ -56,7 +56,6 @@ import {
   getUserMainSettings,
   getUser,
   getUserPermissions,
-  getWatchData,
   updateNotificationSettings,
   updateUserMainSettings,
   updateUserPermissions,
@@ -140,7 +139,6 @@ export function createSeerrClient(options: SeerrClientOptions) {
     getPasswordStatus: (userId: number, signal?: AbortSignal) => getPasswordStatus(request, userId, signal),
     changePassword: (userId: number, currentPassword: string | undefined, newPassword: string) =>
       changePassword(request, userId, currentPassword, newPassword),
-    getWatchData: (userId: number, signal?: AbortSignal) => getWatchData(request, userId, signal),
     listUsers: (take: number, skip: number, query: string, signal?: AbortSignal) =>
       listUsers(request, take, skip, query, signal),
     getUser: (userId: number, signal?: AbortSignal) => getUser(request, userId, signal),
