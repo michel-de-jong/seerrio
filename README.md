@@ -29,7 +29,7 @@ npm run smoke
 ## First launch
 
 1. Enter the Seerr address, including `http://` or `https://`.
-2. Sign in with the email and password stored in Seerr. A Jellyfin username works when that is what Seerr has stored.
+2. Sign in with the email and password of your native Seerr account.
 3. Forgot password appears only when the server can send email.
 4. API key sign-in is under Advanced. It acts as the admin account.
 

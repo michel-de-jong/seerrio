@@ -12,13 +12,13 @@ Checked against Seerr 3.x (3.5.0 was current when this was written). The live, i
 
 ## Authentication
 
-This server uses Seerr's own accounts ("local users"): an email and a password stored in Seerr, separate from Jellyfin. Settings, Users, "Enable Local Sign-In" must be on (the default); `GET /settings/public` exposes it as `localLogin`.
+This app uses Seerr's native accounts ("local users"): an email and a password stored in Seerr. Settings, Users, "Enable Local Sign-In" must be on (the default); `GET /settings/public` exposes it as `localLogin`.
 
 ### Session cookie (default)
 
 1. `POST /auth/local` with `{ "email": "...", "password": "..." }`.
    * Seerr looks the account up by email only. A username fails, and the Seerr log shows a failed sign-in with that username as the email.
-   * Users imported from Jellyfin use their Jellyfin username as their email unless an admin set a real one, and they need a password set in Seerr (Users, edit, Password). So send what the user typed (trimmed) and don't validate the email format.
+   * Send what the user typed (trimmed) and don't validate the email format; Seerr decides. A user without a password set in Seerr (Users, edit, Password) cannot sign in this way.
    * A wrong email or password returns an error status (403 "Access denied." in current versions). `npm run smoke` records the real status and body; trust that over this line.
 2. Read the whole response body before sending anything else. Seerr finishes saving the session while it sends this response, and an immediate follow-up request can get a spurious 403.
 3. The body is a partial user: the local sign-in route loads only the id, the email and a few internal fields, so `permissions`, `displayName` and the rest are missing. Call `GET /auth/me` straight after sign-in and use that user everywhere.
@@ -43,7 +43,7 @@ This server uses Seerr's own accounts ("local users"): an email and a password s
 
 ### Not used
 
-* `/auth/jellyfin`, `/auth/plex`, `/auth/emby` and the Jellyfin Quick Connect endpoints. This server signs in with Seerr accounts.
+* `/auth/plex`. Plex sign-in is out of scope for now; the app signs in with native Seerr accounts only.
 
 ## Server discovery
 
@@ -53,7 +53,7 @@ This server uses Seerr's own accounts ("local users"): an email and a password s
   * `localLogin`: must be true for email and password sign-in
   * `emailEnabled`: shows "Forgot password?"
   * `partialRequestsEnabled`, `movie4kEnabled`, `series4kEnabled`
-* The media server fields (`mediaServerType`, `mediaServerLogin`) don't matter for sign-in. "Open in Jellyfin" uses `mediaInfo.mediaUrl` from the details.
+* The media server fields (`mediaServerType`, `mediaServerLogin`) don't matter for sign-in. "Open in library" uses `mediaInfo.mediaUrl` from the details.
 
 ## Endpoints the app uses
 

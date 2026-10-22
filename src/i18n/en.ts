@@ -50,10 +50,11 @@ export const en = {
   },
   signIn: {
     title: 'Sign in',
-    intro: 'Use the email and password stored in Seerr. Accounts imported from Jellyfin often sign in with the Jellyfin username.',
-    emailLabel: 'Email or username',
+    intro: 'Use the email and password of your Seerr account.',
+    emailLabel: 'Email',
     passwordLabel: 'Password',
     wrongCredentials: 'Wrong email or password.',
+    sessionMissing: 'The password was accepted, but the session did not start. Try again.',
     unavailable: 'Seerr could not sign you in. Check that local sign-in is enabled, then try again.',
     forgot: 'Forgot password?',
     advanced: 'Advanced',

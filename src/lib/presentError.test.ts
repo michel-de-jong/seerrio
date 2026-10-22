@@ -1,4 +1,5 @@
 import { SeerrError } from '../api/errors';
+import { en } from '../i18n/en';
 import { presentError } from './presentError';
 
 describe('presentError', () => {
@@ -9,5 +10,12 @@ describe('presentError', () => {
     expect(presentError(quota)).toBe('Quota reached.');
     const duplicate = new SeerrError({ status: 409, path: '/request', serverMessage: 'Exists', kind: 'http' });
     expect(presentError(duplicate)).toBe('Already requested.');
+  });
+
+  it('keeps a missing session distinct from a rejected password', () => {
+    const rejected = new SeerrError({ status: 403, path: '/auth/local', serverMessage: 'Access denied.', kind: 'http' });
+    const missing = new SeerrError({ status: 0, path: '/auth/me', serverMessage: '', kind: 'parse' });
+    expect(presentError(rejected, 'signIn')).toBe(en.signIn.wrongCredentials);
+    expect(presentError(missing, 'signIn')).toBe(en.signIn.sessionMissing);
   });
 });

@@ -16,7 +16,7 @@ Unofficial household client for a self-hosted Seerr 3.x server. One Expo codebas
 
 ## Out of scope
 
-Jellyfin, Plex, or Emby sign-in. Playback. User management. Issue reports. Push notifications. Analytics. Languages other than English. CSRF double-submit (v1 expects CSRF protection to stay off). Store listing content and submission.
+Plex sign-in, and any sign-in other than native Seerr accounts. Playback. User management. Issue reports. Push notifications. Analytics. Languages other than English. CSRF double-submit (v1 expects CSRF protection to stay off). Store listing content and submission.
 
 ## Connect
 
@@ -31,7 +31,9 @@ Jellyfin, Plex, or Emby sign-in. Playback. User management. Issue reports. Push 
 * Require a non-empty email or username. Do not check email format.
 * Require a password. Do not store it. Tag the fields for the platform password manager.
 * Read the whole sign-in response, store `connect.sid` (or the fallback session cookie) as `name=value` without decoding, then load `/auth/me` and use that user everywhere.
-* A 401 or 403 on sign-in says the email or password is wrong. A 5xx says to check that local sign-in is enabled when public settings say it is off.
+* Sign in only with `POST /auth/local` (native Seerr accounts).
+* A 401 or 403 on sign-in says the email or password is wrong. A 5xx from Seerr says to check that local sign-in is enabled when public settings say it is off.
+* After a successful sign-in, load `/auth/me` once more if the first attempt is 401 or 403. Seerr can still be saving the session. If that also fails, or the phone received no session cookie, say the session did not start.
 * Advanced shows the API-key warning: the key acts as the admin, requests are attributed to the admin and approved automatically, and it belongs on the owner's device only.
 * Sign out calls `POST /auth/logout` as a best effort and clears the cookie, API key, and cached user. Change server also clears the URL.
 * On launch, a saved session loads `/auth/me`. A 401 or 403 clears it. A network failure keeps a cached user when one exists.
