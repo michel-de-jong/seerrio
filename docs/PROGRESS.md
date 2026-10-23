@@ -75,6 +75,8 @@ Local iOS and Android compilation also needs a full Xcode installation, CocoaPod
 
 ## Changelog
 
+* 2026-10-23 · Sign-out fix · After signing out and back in on the same server, Discover, Search and Requests showed "Your session has ended" while Profile still worked. Sign-out retires the old client so it stops sending credentials, but screens kept that client because the server URL had not changed. `AuthProvider` now creates a new client whenever the session generation changes. Verify: sign out, sign in as another user, and open every tab.
+
 * 2026-10-23 · Error handling · Creating a native user failed with a generic error even though Seerr had created the account: Seerr omits `email` from the created user it returns, and the app rejected that reply. The app now keeps the email it sent. Error messages were rewritten app-wide: Seerr's message and HTTP status are shown, 409 is no longer "already requested" outside the request sheet, timeouts during a change warn it may have been saved, and every action failure appears under its own button. Added success confirmations, password-length hints, and release checks that enforce the pattern.
 
 * 2026-10-22 · Static Expo config · Replaced `app.config.ts` with `app.json`. The TypeScript file had no dynamic behavior, but EAS refuses to modify dynamic config and stopped on every new field. The Expo owner is `elderscrolls-team`.
