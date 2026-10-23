@@ -57,7 +57,14 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
   const persistentRef = useRef(false);
   const serverRef = useRef<string | null>(null);
   const generationRef = useRef(0);
+  const [generation, setGeneration] = useState(0);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
+
+  // A client sends credentials only while its generation is current, so screens need a new one after every bump.
+  const advanceGeneration = useCallback(() => {
+    generationRef.current += 1;
+    setGeneration(generationRef.current);
+  }, []);
   const [session, setSession] = useState<Session>({ status: 'loading' });
 
   const clearPersistedAuth = useCallback(async () => {
@@ -134,7 +141,11 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
 
   // The session cookie is read when a request starts. A ref lets sign-in store it and call getMe in the same turn.
   /* eslint-disable react-hooks/refs -- createSeerrClient stores these callbacks; it does not read the ref while rendering */
-  const client = useMemo(() => (serverUrl ? clientFor(serverUrl) : null), [clientFor, serverUrl]);
+  const client = useMemo(
+    () => (serverUrl ? clientFor(serverUrl) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clientFor reads the generation from its ref
+    [clientFor, serverUrl, generation],
+  );
   /* eslint-enable react-hooks/refs */
 
   const rememberUser = useCallback(
@@ -219,14 +230,14 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
         throw new SeerrError({ status: 0, path: '/', serverMessage: 'Invalid server URL.', kind: 'parse' });
       }
       await clearSecrets();
-      generationRef.current += 1;
+      advanceGeneration();
       await storage.set(sessionKeys.serverUrl, normalized);
       serverRef.current = normalized;
       setServerUrl(normalized);
       setSession({ status: 'needsSignIn', serverUrl: normalized, hasStoredAuth: false });
       queryClient.clear();
     },
-    [clearSecrets, queryClient, storage],
+    [advanceGeneration, clearSecrets, queryClient, storage],
   );
 
   const signInWithPassword = useCallback(
@@ -287,11 +298,11 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
     } catch {
       // Logging out is best effort. The local session is cleared either way.
     }
-    generationRef.current += 1;
+    advanceGeneration();
     await clearSecrets();
     if (url) setSession({ status: 'needsSignIn', serverUrl: url, hasStoredAuth: false });
     queryClient.clear();
-  }, [clearSecrets, clientFor, queryClient]);
+  }, [advanceGeneration, clearSecrets, clientFor, queryClient]);
 
   const forgetServer = useCallback(async () => {
     const url = serverRef.current;
@@ -300,14 +311,14 @@ export function AuthProvider({ children, storage = secureSessionStorage }: Props
     } catch {
       // Best effort, same as sign-out.
     }
-    generationRef.current += 1;
+    advanceGeneration();
     await clearSecrets();
     await storage.remove(sessionKeys.serverUrl);
     serverRef.current = null;
     setServerUrl(null);
     setSession({ status: 'needsServer' });
     queryClient.clear();
-  }, [clearSecrets, clientFor, queryClient, storage]);
+  }, [advanceGeneration, clearSecrets, clientFor, queryClient, storage]);
 
   const retrySession = useCallback(async () => {
     const url = serverRef.current;
