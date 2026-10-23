@@ -247,6 +247,8 @@ export const en = {
     remaining: (label: string, remaining: number, limit: number, days: number) =>
       `${label}: ${remaining} of ${limit} left over ${days} days`,
     unavailable: 'Quota is unavailable right now. You can still try the request.',
+    profileUnavailable: 'Your quota could not be loaded right now.',
+    loading: 'Loading quota…',
   },
   profileSettings: {
     displayName: 'Display name',
@@ -280,6 +282,7 @@ export const en = {
     new: 'New password',
     confirm: 'Confirm new password',
     mismatch: 'The new passwords do not match.',
+    tooShort: 'Use at least 8 characters.',
     change: 'Change password',
     confirmTitle: 'Change your password?',
     confirmBody: 'Use the new password the next time Seerr asks you to sign in.',
@@ -323,6 +326,9 @@ export const en = {
     deleteUser: 'Delete user',
     deleteTitle: 'Delete this user?',
     deleteBody: (name: string) => `Permanently delete ${name} from Seerr?`,
+    accountSaved: 'Account and quotas saved.',
+    permissionsSaved: 'Permissions saved.',
+    passwordSet: 'New password set.',
     permissions: {
       admin: 'Administrator',
       manageSettings: 'Manage server settings',
@@ -444,12 +450,31 @@ export const en = {
     flushBody: (name: string) => `${name} will be emptied and rebuilt as Seerr uses it.`,
   },
   errors: {
-    generic: 'Something went wrong. Try again.',
-    offline: 'The server could not be reached.',
-    timeout: 'The server took too long to respond.',
+    unexpected: 'The app ran into an unexpected problem. Go back and try again. If it keeps happening, restart the app.',
+    invalidLink: 'This link is incomplete or invalid. Go back and open the item again.',
+    offline: 'Your Seerr server could not be reached. Check this phone’s connection, Wi-Fi or VPN, then try again.',
+    actionOffline:
+      'Your Seerr server could not be reached, so the change was not confirmed. Check the connection, then try again.',
+    timeout: 'Your Seerr server took longer than 15 seconds to respond. Try again in a moment.',
+    actionTimeout:
+      'Your Seerr server took longer than 15 seconds to respond. The change may still have been saved, so refresh before trying again.',
+    unreadable:
+      'Seerr sent data this app could not read. Check that the server runs Seerr 3.x, then try again.',
+    actionUnreadable:
+      'Seerr answered, but the app could not read the reply. The change may have been saved, so refresh before trying again.',
     signedOut: 'Your session has ended. Sign in again.',
     csrf: 'Seerr rejected the security token. Refresh the screen and try again; CSRF protection can remain enabled.',
-    alreadyRequested: 'Already requested.',
+    invalidRequest: 'Seerr rejected the data the app sent (HTTP 400). Check the fields and try again.',
+    rejected: 'Seerr did not accept this.',
+    refused: 'Seerr refused this action.',
     forbidden: 'You do not have permission to use this feature.',
+    notFound: 'Seerr could not find this item. It may have been removed. Go back and refresh.',
+    conflict: 'This conflicts with something that already exists on the Seerr server.',
+    alreadyRequested: 'This title has already been requested.',
+    tooMany: 'Seerr is receiving too many attempts. Wait a minute, then try again.',
+    server: 'Seerr reported an internal error. Try again; if it keeps happening, check the Seerr logs.',
+    http: 'Seerr returned an unexpected response.',
+    withDetails: (lead: string, status: number, message: string) =>
+      message ? `${lead} Seerr said: “${message}” (HTTP ${status})` : `${lead} (HTTP ${status})`,
   },
 } as const;

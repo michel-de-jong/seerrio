@@ -7,8 +7,10 @@ import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { SeasonChoice } from '@/components/SeasonChoice';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { Skeleton } from '@/components/Skeleton';
 import { useMovie, useTv } from '@/features/media/hooks';
 import { useQuota, useSubmitRequest } from '@/features/requests/hooks';
 import { usePublicSettings } from '@/features/server/hooks';
@@ -25,7 +27,7 @@ export default function RequestScreen() {
   const params = useLocalSearchParams<{ type?: string; id?: string }>();
   const mediaType = parseMediaType(params.type);
   const id = parseRouteId(params.id);
-  if (!mediaType || id == null) return <EmptyState message={en.errors.generic} />;
+  if (!mediaType || id == null) return <EmptyState message={en.errors.invalidLink} />;
   return <RequestForm mediaType={mediaType} id={id} />;
 }
 
@@ -46,10 +48,19 @@ function RequestForm({ mediaType, id }: { mediaType: MediaType; id: number }) {
 
   const active = mediaType === 'movie' ? movie : show;
   if (settings.isLoading || active.isLoading) {
-    return <Text style={{ color: theme.colors.muted, padding: theme.space.lg }}>{en.request.submitting}</Text>;
+    return (
+      <View style={{ padding: theme.space.lg }}>
+        <Skeleton width={280} height={200} />
+      </View>
+    );
   }
   if (!settings.data || active.error || !active.data) {
-    return <ErrorState error={active.error ?? settings.error ?? new Error('missing')} onRetry={() => void active.refetch()} />;
+    return (
+      <ErrorState
+        error={active.error ?? settings.error}
+        onRetry={() => void Promise.all([active.refetch(), settings.refetch()])}
+      />
+    );
   }
 
   const options = qualityOptions(
@@ -90,7 +101,7 @@ function RequestForm({ mediaType, id }: { mediaType: MediaType; id: number }) {
       }
       router.back();
     } catch (error) {
-      setMessage(presentError(error));
+      setMessage(presentError(error, 'request'));
     }
   };
 
@@ -147,11 +158,6 @@ function RequestForm({ mediaType, id }: { mediaType: MediaType; id: number }) {
       {quota.isError ? <Text style={{ color: theme.colors.muted }}>{en.quota.unavailable}</Text> : null}
       {blocked ? <Text style={{ color: theme.colors.danger }}>{en.request.quota}</Text> : null}
       {auto && options.length > 0 ? <Text style={{ color: theme.colors.muted }}>{en.request.autoApprove}</Text> : null}
-      {message ? (
-        <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>
-          {message}
-        </Text>
-      ) : null}
       <Button
         label={en.request.submit}
         loading={submit.isPending}
@@ -161,6 +167,7 @@ function RequestForm({ mediaType, id }: { mediaType: MediaType; id: number }) {
           void send();
         }}
       />
+      <ErrorMessage message={message} />
     </ScrollView>
   );
 }

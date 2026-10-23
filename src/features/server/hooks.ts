@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { notSignedIn } from '../../api/errors';
 import { useSeerrClient, useSession } from '../../auth/AuthProvider';
 import { queryKeys } from '../../lib/queryKeys';
 
@@ -11,7 +12,7 @@ export function usePublicSettings() {
     queryKey: queryKeys.publicSettings(serverUrl ?? 'none'),
     enabled: client != null && serverUrl != null,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getPublicSettings(signal);
     },
   });
@@ -25,7 +26,7 @@ export function useServerStatus() {
     queryKey: queryKeys.status(serverUrl ?? 'none'),
     enabled: client != null && serverUrl != null,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getStatus(signal);
     },
   });

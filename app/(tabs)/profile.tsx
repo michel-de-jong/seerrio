@@ -93,8 +93,8 @@ function ProfileBody(props: {
       </View>
       {props.authKind === 'apiKey' ? <Text style={{ color: theme.colors.warning }}>{en.profile.apiKey}</Text> : null}
       <Text style={{ color: theme.colors.text, fontWeight: '700' }}>{en.profile.quota}</Text>
-      {quota.isLoading ? <Text style={{ color: theme.colors.muted }}>{en.quota.unavailable}</Text> : null}
-      {quota.error ? <Text style={{ color: theme.colors.muted }}>{en.quota.unavailable}</Text> : null}
+      {quota.isLoading ? <Text style={{ color: theme.colors.muted }}>{en.quota.loading}</Text> : null}
+      {quota.error ? <Text style={{ color: theme.colors.muted }}>{en.quota.profileUnavailable}</Text> : null}
       {quota.data ? (
         <View style={{ gap: 4 }}>
           <Text style={{ color: theme.colors.text }}>{formatQuota(en.quota.movies, quota.data.movie)}</Text>

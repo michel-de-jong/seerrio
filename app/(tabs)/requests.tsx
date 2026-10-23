@@ -8,6 +8,7 @@ import type { MediaRequest, RequestFilter } from '@/api/types';
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { SegmentedControl } from '@/components/SegmentedControl';
@@ -25,7 +26,6 @@ import { formatDate } from '@/lib/format';
 import { canDeleteRequest, canReviewRequest } from '@/lib/requestability';
 import { requestDisplayStatus } from '@/lib/status';
 import { posterUrl } from '@/lib/tmdb';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 const filters = [
@@ -133,7 +133,7 @@ function RequestRow({ item }: { item: MediaRequest }) {
             <Button
               label={en.actions.approve}
               loading={approve.isPending}
-              onPress={() => confirm(en.requests.approveTitle, en.requests.approveBody, en.actions.approve, () => void approve.mutate(input))}
+              onPress={() => confirm(en.requests.approveTitle, en.requests.approveBody, en.actions.approve, () => approve.mutate(input))}
             />
           ) : null}
           {canReview ? (
@@ -141,7 +141,7 @@ function RequestRow({ item }: { item: MediaRequest }) {
               label={en.actions.decline}
               variant="danger"
               loading={decline.isPending}
-              onPress={() => confirm(en.requests.declineTitle, en.requests.declineBody, en.actions.decline, () => void decline.mutate(input))}
+              onPress={() => confirm(en.requests.declineTitle, en.requests.declineBody, en.actions.decline, () => decline.mutate(input))}
             />
           ) : null}
           {canDelete ? (
@@ -149,15 +149,11 @@ function RequestRow({ item }: { item: MediaRequest }) {
               label={en.actions.remove}
               variant="secondary"
               loading={remove.isPending}
-              onPress={() => confirm(en.requests.removeTitle, en.requests.removeBody, en.actions.remove, () => void remove.mutate(input))}
+              onPress={() => confirm(en.requests.removeTitle, en.requests.removeBody, en.actions.remove, () => remove.mutate(input))}
             />
           ) : null}
         </View>
-        {approve.error || decline.error || remove.error ? (
-          <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>
-            {presentMessage(approve.error ?? decline.error ?? remove.error)}
-          </Text>
-        ) : null}
+        <ErrorMessage error={approve.error ?? decline.error ?? remove.error} />
       </View>
     </View>
   );
@@ -168,10 +164,6 @@ function confirm(title: string, body: string, action: string, onPress: () => voi
     { text: en.actions.cancel, style: 'cancel' },
     { text: action, style: 'destructive', onPress },
   ]);
-}
-
-function presentMessage(error: unknown): string {
-  return presentError(error);
 }
 
 function filterLabel(filter: RequestFilter): string {

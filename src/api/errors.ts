@@ -38,6 +38,10 @@ export function unexpectedResponse(path: string): SeerrError {
   });
 }
 
+export function notSignedIn(): SeerrError {
+  return new SeerrError({ status: 401, path: '', serverMessage: '', kind: 'http' });
+}
+
 export function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError';
 }

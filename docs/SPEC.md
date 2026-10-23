@@ -73,7 +73,7 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 * Movies confirm the title. Series confirm the selected seasons. 4K is offered only when the matching server flag and permission allow it and that quality is requestable.
 * `POST /request` with `mediaId` set to the TMDB id. Series send an explicit `seasons` list. `is4k: true` is sent only for 4K.
 * Success requires a response `id`. A 2xx body without an id shows the server message and stays on the sheet.
-* 409 says already requested. Other failures show the server message, except validator 400s, which stay generic.
+* 409 says already requested. Other failures show the server message with its HTTP status. Validator 400s explain that Seerr rejected the data without showing schema paths.
 * After a real success, invalidate the request list, the request count, the movie or series details, and the quota.
 * Approve, decline, and delete invalidate the request list, the request count, and the matching details.
 * Quota is shown when it loads. A restricted quota with too few remaining requests disables submit. If the quota call fails, the form stays usable and the server decides.
@@ -133,6 +133,15 @@ Plex sign-in, and any sign-in other than native Seerr accounts. Playback. Push n
 ## Every screen
 
 Loading, empty, error with retry, and offline. Labels for controls. Light and dark mode follow the appearance choice in Profile. Status colors come from `src/lib/status.ts`. Permission checks come from `src/lib/permissions.ts`. Copy comes from `src/i18n/en.ts`.
+
+## Error messages
+
+* Every failure message comes from `src/lib/presentError.ts`. It says what happened and what to do next. When Seerr sent a message, the app shows it with the HTTP status.
+* Load failures use `ErrorState` with Retry. Action failures use `ErrorMessage`, placed directly under the control that triggered them and announced to screen readers.
+* A timeout or unreadable reply during a change says the change may already have been saved and asks the user to refresh first.
+* Successful saves that stay on the same screen confirm with `SuccessMessage`.
+* Forms explain why their submit button is disabled, such as a password that is too short or does not match.
+* `npm run release:check` fails when a screen renders its own error text or leaves a rejected mutation promise unhandled.
 
 ## Release acceptance
 

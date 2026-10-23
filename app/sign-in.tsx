@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } fro
 import { SeerrError } from '@/api/errors';
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { TextField } from '@/components/TextField';
 import { usePublicSettings } from '@/features/server/hooks';
@@ -93,7 +94,7 @@ export default function SignInScreen() {
               label={en.actions.retry}
               variant="secondary"
               onPress={() => {
-                void retrySession().catch((caught: unknown) => setError(presentError(caught)));
+                void retrySession().catch((caught: unknown) => setError(presentError(caught, 'signIn')));
               }}
             />
           </>
@@ -143,11 +144,7 @@ export default function SignInScreen() {
             </View>
           </Pressable>
         )}
-        {error ? (
-          <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>
-            {error}
-          </Text>
-        ) : null}
+        <ErrorMessage message={error} />
         <Button
           label={en.actions.signIn}
           loading={loading}

@@ -16,7 +16,7 @@ type BrowseParams = {
 export default function CategoryDiscoverScreen() {
   const params = useLocalSearchParams<BrowseParams>();
   const parsed = parseParams(params);
-  if (!parsed) return <EmptyState message={en.errors.generic} />;
+  if (!parsed) return <EmptyState message={en.errors.invalidLink} />;
   return <CategoryResults {...parsed} />;
 }
 

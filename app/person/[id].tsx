@@ -14,7 +14,7 @@ import { useTheme } from '@/theme/useTheme';
 export default function PersonScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = parseRouteId(params.id);
-  if (id == null) return <EmptyState message={en.errors.generic} />;
+  if (id == null) return <EmptyState message={en.errors.invalidLink} />;
   return <Person id={id} />;
 }
 

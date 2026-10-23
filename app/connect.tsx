@@ -6,6 +6,7 @@ import { createSeerrClient } from '@/api';
 import { normalizeServerUrl } from '@/api/url';
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { TextField } from '@/components/TextField';
 import { en } from '@/i18n/en';
@@ -79,11 +80,7 @@ export default function ConnectScreen() {
               void submit();
             }}
           />
-          {error ? (
-            <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>
-              {error}
-            </Text>
-          ) : null}
+          <ErrorMessage message={error} />
           <Button
             label={en.actions.continue}
             loading={loading}

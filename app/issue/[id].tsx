@@ -6,6 +6,7 @@ import type { IssueComment } from '@/api/types';
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
@@ -22,13 +23,12 @@ import { en } from '@/i18n/en';
 import { formatDate, parseRouteId } from '@/lib/format';
 import { issueStatusLabel, issueTypeLabel } from '@/lib/issues';
 import { canManageIssues } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function IssueDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = parseRouteId(params.id);
-  if (id == null) return <EmptyState message={en.errors.generic} />;
+  if (id == null) return <EmptyState message={en.errors.invalidLink} />;
   return <IssueDetails id={id} />;
 }
 
@@ -57,7 +57,6 @@ function IssueDetails({ id }: { id: number }) {
   const canParticipate = manager || owner;
   const canDelete = manager || (owner && issue.comments.length <= 1);
   const title = details.data ? ('title' in details.data ? details.data.title : details.data.name) : en.media.untitled;
-  const mutationError = addComment.error ?? setStatus.error ?? removeIssue.error ?? updateComment.error ?? removeComment.error;
 
   return (
     <ScrollView contentContainerStyle={{ padding: theme.space.md, paddingBottom: theme.space.xl, gap: theme.space.md }}>
@@ -73,6 +72,10 @@ function IssueDetails({ id }: { id: number }) {
           key={comment.id}
           comment={comment}
           canModify={manager || comment.user.id === userId}
+          error={
+            (updateComment.variables?.commentId === comment.id ? updateComment.error : null) ??
+            (removeComment.variables === comment.id ? removeComment.error : null)
+          }
           editing={editingId === comment.id}
           editingMessage={editingMessage}
           setEditingMessage={setEditingMessage}
@@ -82,13 +85,14 @@ function IssueDetails({ id }: { id: number }) {
           }}
           onCancel={() => setEditingId(null)}
           onSave={() =>
-            void updateComment
-              .mutateAsync({ commentId: comment.id, message: editingMessage.trim() })
-              .then(() => setEditingId(null))
+            updateComment.mutate(
+              { commentId: comment.id, message: editingMessage.trim() },
+              { onSuccess: () => setEditingId(null) },
+            )
           }
           onDelete={() =>
             confirm(en.issues.deleteCommentTitle, en.issues.deleteCommentBody, en.actions.remove, () =>
-              void removeComment.mutate(comment.id),
+              removeComment.mutate(comment.id),
             )
           }
         />
@@ -110,37 +114,43 @@ function IssueDetails({ id }: { id: number }) {
             loading={addComment.isPending}
             disabled={!message.trim()}
             onPress={() =>
-              void addComment.mutateAsync({ issueId: issue.id, message: message.trim() }).then(() => setMessage(''))
+              addComment.mutate({ issueId: issue.id, message: message.trim() }, { onSuccess: () => setMessage('') })
             }
           />
+          <ErrorMessage error={addComment.error} />
         </View>
       ) : null}
 
       {canParticipate ? (
-        <Button
-          label={issue.status === 1 ? en.issues.resolve : en.issues.reopen}
-          variant="secondary"
-          loading={setStatus.isPending}
-          onPress={() =>
-            confirm(en.issues.statusTitle, en.issues.statusBody, issue.status === 1 ? en.issues.resolve : en.issues.reopen, () =>
-              void setStatus.mutate({ issueId: issue.id, status: issue.status === 1 ? 'resolved' : 'open' }),
-            )
-          }
-        />
+        <View style={{ gap: theme.space.sm }}>
+          <Button
+            label={issue.status === 1 ? en.issues.resolve : en.issues.reopen}
+            variant="secondary"
+            loading={setStatus.isPending}
+            onPress={() =>
+              confirm(en.issues.statusTitle, en.issues.statusBody, issue.status === 1 ? en.issues.resolve : en.issues.reopen, () =>
+                setStatus.mutate({ issueId: issue.id, status: issue.status === 1 ? 'resolved' : 'open' }),
+              )
+            }
+          />
+          <ErrorMessage error={setStatus.error} />
+        </View>
       ) : null}
       {canDelete ? (
-        <Button
-          label={en.issues.deleteIssue}
-          variant="danger"
-          loading={removeIssue.isPending}
-          onPress={() =>
-            confirm(en.issues.deleteTitle, en.issues.deleteBody, en.issues.deleteIssue, () =>
-              void removeIssue.mutate(issue.id, { onSuccess: () => router.back() }),
-            )
-          }
-        />
+        <View style={{ gap: theme.space.sm }}>
+          <Button
+            label={en.issues.deleteIssue}
+            variant="danger"
+            loading={removeIssue.isPending}
+            onPress={() =>
+              confirm(en.issues.deleteTitle, en.issues.deleteBody, en.issues.deleteIssue, () =>
+                removeIssue.mutate(issue.id, { onSuccess: () => router.back() }),
+              )
+            }
+          />
+          <ErrorMessage error={removeIssue.error} />
+        </View>
       ) : null}
-      {mutationError ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutationError)}</Text> : null}
     </ScrollView>
   );
 }
@@ -148,6 +158,7 @@ function IssueDetails({ id }: { id: number }) {
 function Comment({
   comment,
   canModify,
+  error,
   editing,
   editingMessage,
   setEditingMessage,
@@ -158,6 +169,7 @@ function Comment({
 }: {
   comment: IssueComment;
   canModify: boolean;
+  error: unknown;
   editing: boolean;
   editingMessage: string;
   setEditingMessage: (value: string) => void;
@@ -197,6 +209,7 @@ function Comment({
           ) : null}
         </>
       )}
+      <ErrorMessage error={error} />
     </View>
   );
 }

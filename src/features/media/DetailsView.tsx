@@ -14,9 +14,9 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { useMediaDetails, useRelatedMedia } from '@/features/media/hooks';
 import { useAddBlocklistItem } from '@/features/admin/hooks';
 import { usePublicSettings } from '@/features/server/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { en } from '@/i18n/en';
 import { mediaYear } from '@/lib/format';
-import { presentError } from '@/lib/presentError';
 import { canCreateIssues, canManageBlocklist, canRequest4kMovie, canRequest4kTv, canRequestMovie, canRequestTv } from '@/lib/permissions';
 import { isQualityRequestable } from '@/lib/requestability';
 import { mediaDisplayStatus } from '@/lib/status';
@@ -156,9 +156,7 @@ export function DetailsView({ mediaType, id }: Props) {
             }
           />
         ) : null}
-        {addBlocklist.error ? (
-          <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(addBlocklist.error)}</Text>
-        ) : null}
+        <ErrorMessage error={addBlocklist.error} />
         {mediaType === 'movie' && movieOf(query.data).collection ? (
           <Button
             label={en.media.viewCollection(movieOf(query.data).collection!.name)}

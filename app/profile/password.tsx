@@ -4,12 +4,14 @@ import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, View } from 're
 
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { PasswordHints } from '@/components/PasswordHints';
 import { Skeleton } from '@/components/Skeleton';
+import { SuccessMessage } from '@/components/SuccessMessage';
 import { useChangePassword, usePasswordStatus } from '@/features/profile/hooks';
 import { en } from '@/i18n/en';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function PasswordScreen() {
@@ -62,7 +64,7 @@ function PasswordForm({ userId, hasPassword }: { userId: number; hasPassword: bo
         ) : null}
         <PasswordInput label={en.password.new} value={newPassword} onChangeText={setNewPassword} autoComplete="new-password" />
         <PasswordInput label={en.password.confirm} value={confirmation} onChangeText={setConfirmation} autoComplete="new-password" />
-        {confirmation && newPassword !== confirmation ? <Text style={{ color: theme.colors.danger }}>{en.password.mismatch}</Text> : null}
+        <PasswordHints password={newPassword} confirmation={confirmation} />
         <Button
           label={en.password.change}
           loading={mutation.isPending}
@@ -74,8 +76,8 @@ function PasswordForm({ userId, hasPassword }: { userId: number; hasPassword: bo
             ])
           }
         />
-        {mutation.isSuccess ? <Text accessibilityRole="alert" style={{ color: theme.colors.accent }}>{en.password.changed}</Text> : null}
-        {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+        <SuccessMessage message={mutation.isSuccess && en.password.changed} />
+        <ErrorMessage error={mutation.error} />
       </View>
     </KeyboardAvoidingView>
   );

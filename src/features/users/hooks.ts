@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 
 import type { SeerrClient } from '../../api';
 import type { CreateUserBody } from '../../api/types';
+import { notSignedIn } from '../../api/errors';
 import { useSeerrClient } from '../../auth/AuthProvider';
 import { queryKeys } from '../../lib/queryKeys';
 
@@ -14,7 +15,7 @@ export function useUsers(query: string) {
     enabled: client != null,
     initialPageParam: 0,
     queryFn: ({ pageParam, signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.listUsers(PAGE_SIZE, pageParam, query, signal);
     },
     getNextPageParam: (last, _pages, skip) => (last.page < last.pages ? skip + PAGE_SIZE : undefined),
@@ -27,7 +28,7 @@ export function useUser(userId: number) {
     queryKey: queryKeys.user(userId),
     enabled: client != null && userId > 0,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getUser(userId, signal);
     },
   });
@@ -39,7 +40,7 @@ export function useUserPermissions(userId: number) {
     queryKey: queryKeys.userPermissions(userId),
     enabled: client != null && userId > 0,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getUserPermissions(userId, signal);
     },
   });
@@ -53,7 +54,7 @@ function useUsersMutation<TInput, TResult>(
   return useMutation({
     retry: false,
     mutationFn: (input: TInput) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return mutationFn(input, client);
     },
     onSuccess: async () => {
@@ -74,7 +75,7 @@ export function useUpdateUserPermissions(userId: number) {
   return useMutation({
     retry: false,
     mutationFn: (permissions: number) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.updateUserPermissions(userId, permissions);
     },
     onSuccess: async (permissions) => {

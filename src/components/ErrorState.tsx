@@ -14,7 +14,7 @@ export function ErrorState({ error, onRetry }: Props) {
   const theme = useTheme();
   return (
     <View style={styles.wrap} accessibilityRole="alert">
-      <Text style={[styles.message, { color: theme.colors.text }]}>{presentError(error)}</Text>
+      <Text style={[styles.message, { color: theme.colors.text }]}>{presentError(error, 'load')}</Text>
       <Button label={en.actions.retry} onPress={onRetry} variant="secondary" />
     </View>
   );

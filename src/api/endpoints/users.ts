@@ -128,7 +128,8 @@ export async function getUser(request: SeerrRequest, userId: number, signal?: Ab
 
 export async function createUser(request: SeerrRequest, body: CreateUserBody): Promise<SeerrUser> {
   const response = await request<unknown>('/user', { method: 'POST', body });
-  const parsed = parseUser(response);
+  // Seerr filters the email out of the created user it returns.
+  const parsed = parseUser(isRecord(response) ? { email: body.email, ...response } : response);
   if (!parsed) throw unexpectedResponse('/user');
   return parsed;
 }

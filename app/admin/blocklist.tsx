@@ -11,9 +11,9 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useBlocklist, useRemoveBlocklistItem } from '@/features/admin/hooks';
 import { useDebouncedValue } from '@/features/search/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { en } from '@/i18n/en';
 import { canManageBlocklist, canViewBlocklist } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function BlocklistScreen() {
@@ -75,7 +75,7 @@ function Blocklist({ canManage }: { canManage: boolean }) {
             }
           />
         )}
-        ListFooterComponent={remove.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(remove.error)}</Text> : null}
+        ListFooterComponent=<ErrorMessage error={remove.error} />
       />
     </View>
   );

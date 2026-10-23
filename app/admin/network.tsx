@@ -10,9 +10,10 @@ import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useAdminNetworkSettings, useUpdateAdminNetworkSettings } from '@/features/admin/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { SuccessMessage } from '@/components/SuccessMessage';
 import { en } from '@/i18n/en';
 import { canManageSettings } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function NetworkSettingsScreen() {
@@ -74,7 +75,8 @@ function NetworkForm({ initial }: { initial: AdminNetworkSettings }) {
       <Text style={{ color: theme.colors.muted }}>{en.serverAdmin.trustProxy(initial.trustProxy)}</Text>
       <Text style={{ color: theme.colors.muted }}>{en.serverAdmin.proxyExcluded}</Text>
       <Button label={en.actions.save} loading={mutation.isPending} disabled={!valid} onPress={save} />
-      {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+      <SuccessMessage message={mutation.isSuccess && en.profileSettings.saved} />
+      <ErrorMessage error={mutation.error} />
     </ScrollView>
   );
 }

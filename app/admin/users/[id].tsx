@@ -6,8 +6,11 @@ import type { UserMainSettings } from '@/api/types';
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { PasswordHints } from '@/components/PasswordHints';
+import { SuccessMessage } from '@/components/SuccessMessage';
 import { Skeleton } from '@/components/Skeleton';
 import { useChangePassword, useUpdateUserMainSettings, useUserMainSettings } from '@/features/profile/hooks';
 import { PermissionEditor } from '@/features/users/PermissionEditor';
@@ -15,7 +18,6 @@ import { useDeleteUser, useUpdateUserPermissions, useUser, useUserPermissions } 
 import { en } from '@/i18n/en';
 import { parseRouteId } from '@/lib/format';
 import { canManageUsers, Permission } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function UserDetailsScreen() {
@@ -94,7 +96,6 @@ function UserForm({
   const isAdmin = (currentPermissions & Permission.ADMIN) === Permission.ADMIN;
   const quotaValues = [movieLimit, movieDays, tvLimit, tvDays].map(optionalNonNegativeInteger);
   const quotasValid = quotaValues.every((value) => value !== null);
-  const mutationError = updateSettings.error ?? updatePermissions.error ?? remove.error ?? changePassword.error;
 
   const saveSettings = () => {
     if (!quotasValid) return;
@@ -122,6 +123,8 @@ function UserForm({
       <Field label={en.userAdmin.tvLimit} value={tvLimit} onChangeText={setTvLimit} numeric />
       <Field label={en.userAdmin.tvDays} value={tvDays} onChangeText={setTvDays} numeric />
       <Button label={en.userAdmin.saveAccount} loading={updateSettings.isPending} disabled={!email.trim() || !quotasValid} onPress={saveSettings} />
+      <SuccessMessage message={updateSettings.isSuccess && en.userAdmin.accountSaved} />
+      <ErrorMessage error={updateSettings.error} />
 
       <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: theme.font.heading, fontWeight: '700' }}>{en.userAdmin.permissionTitle}</Text>
       {!canEditPermissions ? <Text style={{ color: theme.colors.muted }}>{en.userAdmin.protectedPermissions}</Text> : null}
@@ -141,12 +144,15 @@ function UserForm({
           )
         }
       />
+      <SuccessMessage message={updatePermissions.isSuccess && en.userAdmin.permissionsSaved} />
+      <ErrorMessage error={updatePermissions.error} />
 
       {id !== currentUserId ? (
         <View style={{ gap: theme.space.sm }}>
           <Text accessibilityRole="header" style={{ color: theme.colors.text, fontSize: theme.font.heading, fontWeight: '700' }}>{en.userAdmin.setPassword}</Text>
           <Field label={en.password.new} value={newPassword} onChangeText={setNewPassword} secure />
           <Field label={en.password.confirm} value={passwordConfirmation} onChangeText={setPasswordConfirmation} secure />
+          <PasswordHints password={newPassword} confirmation={passwordConfirmation} />
           <Button
             label={en.userAdmin.setPassword}
             loading={changePassword.isPending}
@@ -160,22 +166,26 @@ function UserForm({
               )
             }
           />
+          <SuccessMessage message={changePassword.isSuccess && en.userAdmin.passwordSet} />
+          <ErrorMessage error={changePassword.error} />
         </View>
       ) : null}
 
       {canDelete ? (
-        <Button
-          label={en.userAdmin.deleteUser}
-          variant="danger"
-          loading={remove.isPending}
-          onPress={() =>
-            confirm(en.userAdmin.deleteTitle, en.userAdmin.deleteBody(name), en.userAdmin.deleteUser, () =>
-              remove.mutate(id, { onSuccess: () => router.back() }),
-            )
-          }
-        />
+        <View style={{ gap: theme.space.sm }}>
+          <Button
+            label={en.userAdmin.deleteUser}
+            variant="danger"
+            loading={remove.isPending}
+            onPress={() =>
+              confirm(en.userAdmin.deleteTitle, en.userAdmin.deleteBody(name), en.userAdmin.deleteUser, () =>
+                remove.mutate(id, { onSuccess: () => router.back() }),
+              )
+            }
+          />
+          <ErrorMessage error={remove.error} />
+        </View>
       ) : null}
-      {mutationError ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutationError)}</Text> : null}
     </ScrollView>
   );
 }

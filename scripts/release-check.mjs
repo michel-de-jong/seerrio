@@ -98,6 +98,19 @@ requireCheck(
 const theme = read('src/theme/tokens.ts');
 requireCheck(theme.includes('export const darkTheme') && theme.includes('export const lightTheme'), 'Light and dark themes are defined');
 
+const screenFiles = runtimeFiles.filter((path) => path.endsWith('.tsx'));
+const errorComponents = new Set(['src/components/ErrorMessage.tsx', 'src/components/ErrorState.tsx']);
+requireCheck(
+  screenFiles.every(
+    (path) => errorComponents.has(path) || !/accessibilityRole="alert"[^>]*colors\.danger/.test(read(path)),
+  ),
+  'Action failures render through ErrorMessage',
+);
+requireCheck(
+  screenFiles.every((path) => !/\bvoid\s+[\w.]+\s*\.mutateAsync\(/.test(read(path))),
+  'Mutations never leave a rejected promise unhandled',
+);
+
 for (const path of ['src/components/Button.tsx', 'src/components/PosterCard.tsx', 'src/components/SegmentedControl.tsx']) {
   requireCheck(read(path).includes('accessibilityRole='), `${path} exposes accessibility semantics`);
 }
