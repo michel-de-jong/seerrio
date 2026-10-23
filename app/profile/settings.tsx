@@ -9,8 +9,9 @@ import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useUpdateUserMainSettings, useUserMainSettings } from '@/features/profile/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { SuccessMessage } from '@/components/SuccessMessage';
 import { en } from '@/i18n/en';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function ProfileSettingsScreen() {
@@ -74,8 +75,8 @@ function SettingsForm({ userId, initial }: { userId: number; initial: UserMainSe
           })
         }
       />
-      {mutation.isSuccess ? <Text accessibilityRole="alert" style={{ color: theme.colors.accent }}>{en.profileSettings.saved}</Text> : null}
-      {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+      <SuccessMessage message={mutation.isSuccess && en.profileSettings.saved} />
+      <ErrorMessage error={mutation.error} />
     </ScrollView>
   );
 }

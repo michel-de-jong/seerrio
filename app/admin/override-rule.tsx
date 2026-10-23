@@ -10,10 +10,10 @@ import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useOverrideRules, useSaveOverrideRule } from '@/features/admin/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { en } from '@/i18n/en';
 import { parseRouteId } from '@/lib/format';
 import { hasPermission, Permission } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function OverrideRuleScreen() {
@@ -97,7 +97,7 @@ function RuleForm({ initial }: { initial: OverrideRule | Omit<OverrideRule, 'id'
         </View>
       ))}
       <Button label={en.actions.save} loading={mutation.isPending} disabled={!valid} onPress={save} />
-      {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+      <ErrorMessage error={mutation.error} />
     </ScrollView>
   );
 }

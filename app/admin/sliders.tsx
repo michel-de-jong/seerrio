@@ -10,9 +10,9 @@ import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useDiscoverSliders, useUpdateDiscoverSliders } from '@/features/admin/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { en } from '@/i18n/en';
 import { hasPermission, Permission } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function SlidersScreen() {
@@ -69,7 +69,7 @@ function SliderEditor({ initial }: { initial: DiscoverSlider[] }) {
         </View>
       ))}
       <Button label={en.actions.save} loading={mutation.isPending} onPress={() => mutation.mutate(sliders)} />
-      {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+      <ErrorMessage error={mutation.error} />
     </ScrollView>
   );
 }

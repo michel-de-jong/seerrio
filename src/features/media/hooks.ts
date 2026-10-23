@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import type { MediaType, MovieDetails, TvDetails } from '../../api/types';
+import { notSignedIn } from '../../api/errors';
 import { useSeerrClient } from '../../auth/AuthProvider';
 import { assertNever } from '../../api/assertNever';
 import { queryKeys } from '../../lib/queryKeys';
@@ -59,7 +60,7 @@ export function useRelatedMedia(
     enabled: client != null && Number.isSafeInteger(id) && id > 0,
     initialPageParam: 1,
     queryFn: ({ pageParam, signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getRelated(mediaType, id, relation, pageParam, signal);
     },
     getNextPageParam: (lastPage) =>
@@ -73,7 +74,7 @@ export function useSeason(tvId: number, seasonNumber: number) {
     queryKey: queryKeys.season(tvId, seasonNumber),
     enabled: client != null && tvId > 0 && seasonNumber >= 0,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getSeason(tvId, seasonNumber, signal);
     },
   });
@@ -85,7 +86,7 @@ export function usePerson(id: number) {
     queryKey: queryKeys.person(id),
     enabled: client != null && id > 0,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getPerson(id, signal);
     },
   });
@@ -97,7 +98,7 @@ export function useCollection(id: number) {
     queryKey: queryKeys.collection(id),
     enabled: client != null && id > 0,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getCollection(id, signal);
     },
   });

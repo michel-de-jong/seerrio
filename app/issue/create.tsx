@@ -9,10 +9,10 @@ import { EmptyState } from '@/components/EmptyState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { SegmentedControl } from '@/components/SegmentedControl';
 import { useCreateIssue } from '@/features/issues/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { en } from '@/i18n/en';
 import { parseRouteId } from '@/lib/format';
 import { canCreateIssues } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function CreateIssueScreen() {
@@ -105,18 +105,19 @@ function IssueForm({
           loading={mutation.isPending}
           disabled={!valid}
           onPress={() =>
-            void mutation
-              .mutateAsync({
+            mutation.mutate(
+              {
                 mediaId,
                 issueType,
                 message: message.trim(),
                 ...(typeof seasonNumber === 'number' ? { problemSeason: seasonNumber } : {}),
                 ...(typeof episodeNumber === 'number' ? { problemEpisode: episodeNumber } : {}),
-              })
-              .then((issue) => router.replace({ pathname: '/issue/[id]', params: { id: String(issue.id) } }))
+              },
+              { onSuccess: (issue) => router.replace({ pathname: '/issue/[id]', params: { id: String(issue.id) } }) },
+            )
           }
         />
-        {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+        <ErrorMessage error={mutation.error} />
       </View>
     </KeyboardAvoidingView>
   );

@@ -11,9 +11,10 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useAdminMainSettings, useUpdateAdminMainSettings } from '@/features/admin/hooks';
 import { PermissionEditor } from '@/features/users/PermissionEditor';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { SuccessMessage } from '@/components/SuccessMessage';
 import { en } from '@/i18n/en';
 import { canManageSettings, hasPermission, Permission } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function MainSettingsScreen() {
@@ -96,8 +97,8 @@ function MainForm({ initial, isAdmin }: { initial: AdminMainSettings; isAdmin: b
       />
       {!isAdmin ? <Text style={{ color: theme.colors.muted }}>{en.serverAdmin.adminOnlyDefaults}</Text> : null}
       <Button label={en.actions.save} loading={mutation.isPending} onPress={save} />
-      {mutation.isSuccess ? <Text accessibilityRole="alert" style={{ color: theme.colors.accent }}>{en.profileSettings.saved}</Text> : null}
-      {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+      <SuccessMessage message={mutation.isSuccess && en.profileSettings.saved} />
+      <ErrorMessage error={mutation.error} />
     </ScrollView>
   );
 }

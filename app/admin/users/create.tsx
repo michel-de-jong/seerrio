@@ -5,11 +5,12 @@ import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-nat
 import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { PasswordHints } from '@/components/PasswordHints';
 import { useCreateUser } from '@/features/users/hooks';
 import { en } from '@/i18n/en';
 import { canManageUsers } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function CreateUserScreen() {
@@ -38,22 +39,26 @@ function CreateUserForm() {
         <Field label={en.profileSettings.displayName} value={username} onChangeText={setUsername} />
         <Field label={en.password.new} value={password} onChangeText={setPassword} secure />
         <Field label={en.password.confirm} value={confirmation} onChangeText={setConfirmation} secure />
+        <PasswordHints password={password} confirmation={confirmation} />
         <Text style={{ color: theme.colors.muted }}>{en.userAdmin.createHint}</Text>
         <Button
           label={en.userAdmin.create}
           loading={mutation.isPending}
           disabled={!valid}
           onPress={() =>
-            void mutation
-              .mutateAsync({ email: email.trim(), username: username.trim() || undefined, password })
-              .then((user) => {
-                setPassword('');
-                setConfirmation('');
-                router.replace({ pathname: '/admin/users/[id]', params: { id: String(user.id) } });
-              })
+            mutation.mutate(
+              { email: email.trim(), username: username.trim() || undefined, password },
+              {
+                onSuccess: (user) => {
+                  setPassword('');
+                  setConfirmation('');
+                  router.replace({ pathname: '/admin/users/[id]', params: { id: String(user.id) } });
+                },
+              },
+            )
           }
         />
-        {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+        <ErrorMessage error={mutation.error} />
       </View>
     </KeyboardAvoidingView>
   );

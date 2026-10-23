@@ -5,6 +5,7 @@ import { ScrollView, Text } from 'react-native';
 import { SeerrError } from '@/api/errors';
 import { useSeerrClient } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { TextField } from '@/components/TextField';
 import { usePublicSettings } from '@/features/server/hooks';
@@ -31,7 +32,7 @@ export default function ForgotPasswordScreen() {
       setDone(true);
     } catch (caught) {
       if (caught instanceof SeerrError && caught.kind === 'http') setDone(true);
-      else setError(presentError(caught));
+      else setError(presentError(caught, 'action'));
     } finally {
       setLoading(false);
     }
@@ -58,11 +59,7 @@ export default function ForgotPasswordScreen() {
               textContentType="username"
               keyboardType="email-address"
             />
-            {error ? (
-              <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>
-                {error}
-              </Text>
-            ) : null}
+            <ErrorMessage message={error} />
             <Button
               label={en.forgotPassword.submit}
               loading={loading}

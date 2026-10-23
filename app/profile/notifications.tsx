@@ -10,9 +10,10 @@ import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useNotificationSettings, useUpdateNotificationSettings } from '@/features/profile/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { SuccessMessage } from '@/components/SuccessMessage';
 import { en } from '@/i18n/en';
 import { notificationEvents, toggleNotificationBit } from '@/lib/notifications';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function NotificationSettingsScreen() {
@@ -69,8 +70,8 @@ function NotificationForm({ userId, initial }: { userId: number; initial: Notifi
         disabled={channels.length === 0}
         onPress={() => mutation.mutate({ ...initial, notificationTypes: types })}
       />
-      {mutation.isSuccess ? <Text accessibilityRole="alert" style={{ color: theme.colors.accent }}>{en.profileSettings.saved}</Text> : null}
-      {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+      <SuccessMessage message={mutation.isSuccess && en.profileSettings.saved} />
+      <ErrorMessage error={mutation.error} />
     </ScrollView>
   );
 }

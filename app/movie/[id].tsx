@@ -8,6 +8,6 @@ import { en } from '@/i18n/en';
 export default function MovieScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = parseRouteId(params.id);
-  if (id == null) return <EmptyState message={en.errors.generic} />;
+  if (id == null) return <EmptyState message={en.errors.invalidLink} />;
   return <DetailsView mediaType="movie" id={id} />;
 }

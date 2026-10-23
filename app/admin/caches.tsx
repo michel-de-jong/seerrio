@@ -8,9 +8,9 @@ import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useCacheSummary, useFlushCache } from '@/features/admin/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { en } from '@/i18n/en';
 import { canManageSettings } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function CachesScreen() {
@@ -60,7 +60,7 @@ function Caches() {
           />
         </View>
       ))}
-      {flush.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(flush.error)}</Text> : null}
+      <ErrorMessage error={flush.error} />
     </ScrollView>
   );
 }

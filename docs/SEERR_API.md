@@ -112,7 +112,7 @@ This app uses Seerr's native accounts ("local users"): an email and a password s
 | `POST /user/{id}/settings/password` | Change password | Current password is required when one exists; minimum 8 characters |
 | `GET /user?take=&skip=&q=` | User administration list/search | MANAGE_USERS in the app |
 | `GET /user/{id}` | User detail | MANAGE_USERS |
-| `POST /user` | Create a native user | App sends email, optional username, and an explicit password |
+| `POST /user` | Create a native user | App sends email, optional username, and an explicit password. The 201 reply is `user.filter()`, which omits `email`; the app keeps the email it sent |
 | `DELETE /user/{id}` | Delete a user | Primary owner and current manager are protected in the app |
 | `GET /user/{id}/settings/permissions` | Permission mask | MANAGE_USERS |
 | `POST /user/{id}/settings/permissions` | Replace permission mask | Server enforces delegation limits |
@@ -280,12 +280,14 @@ The values come from Seerr's `server/lib/permissions.ts`; re-check there if an u
 
 | Status | Usual cause | App behavior |
 | --- | --- | --- |
-| 400 | Validator rejected a parameter (query encoding, invalid `filter`) | A bug: record the path (no secrets), show a generic error |
+| 400 | Validator rejected a parameter (query encoding, invalid `filter`), or a route rejected the data | Validator messages (`request/body/...`, "must be url encoded") show an invalid-request explanation. Other 400s show Seerr's message |
 | 401 | No cookie or API key sent ("cookie 'connect.sid' required") | Signed out |
-| 403 | Native-account credentials rejected (on `/auth/local`), not permitted, quota, expired session, or CSRF ("invalid csrf token") | On a change, refresh the CSRF cookies once and retry. If it is still CSRF, say CSRF blocked it. On sign-in, any other 401 or 403 shows the HTTP status and safe server message. Elsewhere: if `/auth/me` also fails, signed out; otherwise show the server message |
-| 404 | Not found | Contextual |
-| 409 | Duplicate request | "Already requested" |
-| 5xx | Seerr or an upstream service failed; on `/auth/local` it can also mean local sign-in is turned off | Sign-in: check `localLogin` and show the "turned off" message if it's false. Elsewhere: retry queries with backoff; never auto-retry mutations |
+| 403 | Native-account credentials rejected (on `/auth/local`), not permitted, quota, expired session, or CSRF ("invalid csrf token") | On a change, refresh the CSRF cookies once and retry. If it is still CSRF, say CSRF blocked it. On sign-in, any other 401 or 403 shows the HTTP status and safe server message. Elsewhere: show Seerr's message, or a permission explanation when there is none |
+| 404 | Not found | Say the item may have been removed |
+| 409 | Duplicate request, or a user that already exists ("User already exists with submitted email.") | Request sheet: "already requested". Elsewhere: a conflict with Seerr's message |
+| 5xx | Seerr or an upstream service failed; on `/auth/local` it can also mean local sign-in is turned off. `POST /user` without a password returns 500 "Email notifications must be enabled" | Sign-in: check `localLogin` and show the "turned off" message if it's false. Elsewhere: show Seerr's message; retry queries with backoff; never auto-retry mutations |
+
+Every message from Seerr is shown with its HTTP status. A timeout or unreadable reply during a change says the change may already have been saved, because Seerr may have applied it before the reply was lost.
 
 ## CSRF protection
 

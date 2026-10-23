@@ -6,6 +6,7 @@ import { useSession } from '@/auth/AuthProvider';
 import { Button } from '@/components/Button';
 import { SeasonChoice } from '@/components/SeasonChoice';
 import { EmptyState } from '@/components/EmptyState';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
@@ -24,13 +25,12 @@ import { parseRouteId } from '@/lib/format';
 import { canManageRequests } from '@/lib/permissions';
 import { canDeleteRequest, canReviewRequest } from '@/lib/requestability';
 import { requestDisplayStatus } from '@/lib/status';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function RequestDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = parseRouteId(params.id);
-  if (id == null) return <EmptyState message={en.errors.generic} />;
+  if (id == null) return <EmptyState message={en.errors.invalidLink} />;
   return <RequestDetails id={id} />;
 }
 
@@ -61,7 +61,7 @@ function RequestDetails({ id }: { id: number }) {
   const input = { id: item.id, mediaType: item.type, tmdbId: item.media.tmdbId };
   const title = details.data ? ('title' in details.data ? details.data.title : details.data.name) : en.requests.titleUnavailable;
   const seasons = details.data && 'seasons' in details.data ? details.data.seasons.filter((season) => season.seasonNumber !== 0) : [];
-  const mutationError = update.error ?? retry.error ?? approve.error ?? decline.error ?? remove.error;
+  const actionError = retry.error ?? approve.error ?? decline.error ?? remove.error;
 
   return (
     <ScrollView contentContainerStyle={{ padding: theme.space.md, paddingBottom: theme.space.xl, gap: theme.space.md }}>
@@ -117,18 +117,19 @@ function RequestDetails({ id }: { id: number }) {
               )
             }
           />
+          <ErrorMessage error={update.error} />
         </View>
       ) : null}
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.space.sm }}>
         {canReviewRequest(permissions, item.status) ? (
           <>
-            <Button label={en.actions.approve} loading={approve.isPending} onPress={() => confirm(en.requests.approveTitle, en.requests.approveBody, en.actions.approve, () => void approve.mutate(input))} />
-            <Button label={en.actions.decline} variant="danger" loading={decline.isPending} onPress={() => confirm(en.requests.declineTitle, en.requests.declineBody, en.actions.decline, () => void decline.mutate(input))} />
+            <Button label={en.actions.approve} loading={approve.isPending} onPress={() => confirm(en.requests.approveTitle, en.requests.approveBody, en.actions.approve, () => approve.mutate(input))} />
+            <Button label={en.actions.decline} variant="danger" loading={decline.isPending} onPress={() => confirm(en.requests.declineTitle, en.requests.declineBody, en.actions.decline, () => decline.mutate(input))} />
           </>
         ) : null}
         {manager && item.status === 4 ? (
-          <Button label={en.actions.retryRequest} loading={retry.isPending} onPress={() => confirm(en.requests.retryTitle, en.requests.retryBody, en.actions.retryRequest, () => void retry.mutate(input))} />
+          <Button label={en.actions.retryRequest} loading={retry.isPending} onPress={() => confirm(en.requests.retryTitle, en.requests.retryBody, en.actions.retryRequest, () => retry.mutate(input))} />
         ) : null}
         {canDeleteRequest(permissions, { status: item.status, requestedById: item.requestedBy?.id }, userId) ? (
           <Button
@@ -137,13 +138,13 @@ function RequestDetails({ id }: { id: number }) {
             loading={remove.isPending}
             onPress={() =>
               confirm(en.requests.removeTitle, en.requests.removeBody, en.actions.remove, () =>
-                void remove.mutate(input, { onSuccess: () => router.back() }),
+                remove.mutate(input, { onSuccess: () => router.back() }),
               )
             }
           />
         ) : null}
       </View>
-      {mutationError ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutationError)}</Text> : null}
+      <ErrorMessage error={actionError} />
     </ScrollView>
   );
 }

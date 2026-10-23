@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
+import { notSignedIn } from '../../api/errors';
 import { useSeerrClient } from '../../auth/AuthProvider';
 import { queryKeys } from '../../lib/queryKeys';
 
@@ -21,7 +22,7 @@ export function useSearch(query: string) {
     enabled: client != null && trimmed.length > 0,
     initialPageParam: 1,
     queryFn: ({ pageParam, signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.search(trimmed, pageParam, signal);
     },
     getNextPageParam: (last) => (last.page < last.totalPages ? last.page + 1 : undefined),

@@ -8,9 +8,9 @@ import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useDeleteOverrideRule, useOverrideRules } from '@/features/admin/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { en } from '@/i18n/en';
 import { hasPermission, Permission } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function OverrideRulesScreen() {
@@ -53,7 +53,7 @@ function Rules() {
           </View>
         </View>
       ))}
-      {remove.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(remove.error)}</Text> : null}
+      <ErrorMessage error={remove.error} />
     </ScrollView>
   );
 }

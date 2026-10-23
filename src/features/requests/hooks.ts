@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { CreateRequestBody, MediaType, RequestFilter, UpdateRequestBody } from '../../api/types';
+import { notSignedIn } from '../../api/errors';
 import { useSeerrClient, useSession } from '../../auth/AuthProvider';
 import { assertNever } from '../../api/assertNever';
 import { canManageRequests } from '../../lib/permissions';
@@ -15,7 +16,7 @@ export function useRequests(filter: RequestFilter) {
     enabled: client != null,
     initialPageParam: 0,
     queryFn: ({ pageParam, signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.listRequests(
         { take: PAGE_SIZE, skip: pageParam, filter, sort: 'added', sortDirection: 'desc' },
         signal,
@@ -33,7 +34,7 @@ export function useRequestCount() {
     queryKey: queryKeys.requestCount,
     enabled,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getRequestCount(signal);
     },
   });
@@ -45,7 +46,7 @@ export function useRequest(id: number) {
     queryKey: queryKeys.request(id),
     enabled: client != null && id > 0,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getRequest(id, signal);
     },
   });
@@ -94,7 +95,7 @@ export function useSubmitRequest() {
   return useMutation({
     retry: false,
     mutationFn: (body: CreateRequestBody) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.submitRequest(body);
     },
     onSuccess: async (_result, body) => {
@@ -113,7 +114,7 @@ function useRequestMutation(action: 'approve' | 'decline' | 'delete') {
   return useMutation({
     retry: false,
     mutationFn: (input: { id: number; mediaType: MediaType; tmdbId: number }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       switch (action) {
         case 'approve':
           return client.approveRequest(input.id);
@@ -148,7 +149,7 @@ export function useUpdateRequest() {
       body: UpdateRequestBody;
       tmdbId: number;
     }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.updateRequest(input.id, input.body);
     },
     onSuccess: async (request, input) => {
@@ -167,7 +168,7 @@ export function useRetryRequest() {
   return useMutation({
     retry: false,
     mutationFn: (input: { id: number; mediaType: MediaType; tmdbId: number }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.retryRequest(input.id);
     },
     onSuccess: async (request, input) => {

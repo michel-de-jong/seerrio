@@ -16,7 +16,7 @@ export default function SeasonScreen() {
   const params = useLocalSearchParams<{ id?: string; season?: string }>();
   const id = parseRouteId(params.id);
   const seasonNumber = parseSeasonNumber(params.season);
-  if (id == null || seasonNumber == null) return <EmptyState message={en.errors.generic} />;
+  if (id == null || seasonNumber == null) return <EmptyState message={en.errors.invalidLink} />;
   return <Season tvId={id} seasonNumber={seasonNumber} />;
 }
 

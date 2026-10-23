@@ -8,10 +8,10 @@ import { ErrorState } from '@/components/ErrorState';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Skeleton } from '@/components/Skeleton';
 import { useChangeServerJob, useServerJobs } from '@/features/admin/hooks';
+import { ErrorMessage } from '@/components/ErrorMessage';
 import { en } from '@/i18n/en';
 import { formatDate } from '@/lib/format';
 import { canManageSettings } from '@/lib/permissions';
-import { presentError } from '@/lib/presentError';
 import { useTheme } from '@/theme/useTheme';
 
 export default function JobsScreen() {
@@ -61,7 +61,7 @@ function Jobs() {
           />
         </View>
       ))}
-      {mutation.error ? <Text accessibilityRole="alert" style={{ color: theme.colors.danger }}>{presentError(mutation.error)}</Text> : null}
+      <ErrorMessage error={mutation.error} />
     </ScrollView>
   );
 }

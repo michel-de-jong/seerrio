@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 
 import type { SeerrClient } from '../../api';
 import type { CreateIssueBody, IssueFilter } from '../../api/types';
+import { notSignedIn } from '../../api/errors';
 import { useSeerrClient, useSession } from '../../auth/AuthProvider';
 import { canManageIssues, canViewIssues } from '../../lib/permissions';
 import { queryKeys } from '../../lib/queryKeys';
@@ -17,7 +18,7 @@ export function useIssues(filter: IssueFilter) {
     enabled,
     initialPageParam: 0,
     queryFn: ({ pageParam, signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.listIssues(filter, PAGE_SIZE, pageParam, signal);
     },
     getNextPageParam: (last, _pages, skip) => (last.page < last.pages ? skip + PAGE_SIZE : undefined),
@@ -30,7 +31,7 @@ export function useIssue(id: number) {
     queryKey: queryKeys.issue(id),
     enabled: client != null && id > 0,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getIssue(id, signal);
     },
   });
@@ -44,7 +45,7 @@ export function useIssueCount() {
     queryKey: queryKeys.issueCount,
     enabled,
     queryFn: ({ signal }) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return client.getIssueCount(signal);
     },
   });
@@ -58,7 +59,7 @@ function useIssueMutation<TInput, TResult>(
   return useMutation({
     retry: false,
     mutationFn: (input: TInput) => {
-      if (!client) throw new Error('Missing client');
+      if (!client) throw notSignedIn();
       return mutationFn(client, input);
     },
     onSuccess: async () => {

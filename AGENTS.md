@@ -68,6 +68,7 @@ scripts/smoke.ts             live API checks (Node via tsx)
 * Screens stay thin. Data comes from hooks in `src/features/<feature>/hooks.ts`; query keys from `src/lib/queryKeys.ts`; mutations invalidate exactly what SPEC.md lists.
 * Status labels and colors come only from `src/lib/status.ts`; permission checks only from `src/lib/permissions.ts`.
 * User-facing strings live in `src/i18n/en.ts`.
+* Error text comes only from `presentError` in `src/lib/presentError.ts`. Load failures use `ErrorState`; action failures use `ErrorMessage` directly under the control that caused them. Use `mutation.mutate(..., { onSuccess })` rather than an unhandled `mutateAsync` promise.
 * Prefer `as const` objects and union types over TypeScript `enum`.
 * Every screen handles loading, empty, error (with retry) and offline states.
 
